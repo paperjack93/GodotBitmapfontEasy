@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - master
-  path-ignore:
+  paths-ignore:
     - 'charts/rgs-v2/Chart.yaml'
     - '**/.gitignore'
     - '.github/**'
