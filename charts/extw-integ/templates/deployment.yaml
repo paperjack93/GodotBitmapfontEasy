@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "extw-integ-v1.fullname" . }}
+  name: {{ include "extw-integ.fullname" . }}
   namespace: {{ .Values.namespace | default "elysium" }}
   labels:
-    {{- include "extw-integ-v1.labels" . | nindent 4 }}
+    {{- include "extw-integ.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount | default 1 }}
   selector:
     matchLabels:
-      {{- include "extw-integ-v1.selectorLabels" . | nindent 6 }}
+      {{- include "extw-integ.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "extw-integ-v1.selectorLabels" . | nindent 8 }}
+        {{- include "extw-integ.selectorLabels" . | nindent 8 }}
     spec:
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

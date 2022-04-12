@@ -6,7 +6,7 @@ on:
     branches:
       - master
   paths-ignore:
-    - 'charts/rgs-v2/Chart.yaml'
+    - 'charts/extw-integ/Chart.yaml'
     - '**/.gitignore'
     - '.github/**'
 
@@ -56,9 +56,9 @@ jobs:
       - name: Update extw-integ release in flux repo
         run: |
           cd infrastructure/
-          sed -i -e 's/version:.*/version: "${{ steps.tag.outputs.new_tag }}"/g' dev/apps-infra/deployments/extw-integ-v1/release.yaml
+          sed -i -e 's/version:.*/version: "${{ steps.tag.outputs.new_tag }}"/g' dev/apps-infra/deployments/extw-integ/release.yaml
           git config --global user.email "workflow@elysiumstudios.se"
-          git config --global user.name "EXTW-INTEG-V1 Workflow"
-          git add dev/apps-infra/deployments/extw-integ-v1/release.yaml
-          git commit -m "Deploy extw-integ-v1 ${{ steps.tag.outputs.new_tag }}"
+          git config --global user.name "EXTW-INTEG Workflow"
+          git add dev/apps-infra/deployments/extw-integ/release.yaml
+          git commit -m "Deploy extw-integ ${{ steps.tag.outputs.new_tag }}"
           git push
