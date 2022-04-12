@@ -33,6 +33,7 @@ jobs:
           DEFAULT_BUMP: patch
       - run: |
           echo building extw-integ ${{ steps.tag.outputs.new_tag }}
+          ./mvnw package
           docker login harbor.elysiumstudios.se -u ${{ env.HARBOR_USERNAME }} -p ${{ env.HARBOR_PASSWORD }}
           docker build -f src/main/docker/Dockerfile.jvm -t harbor.elysiumstudios.se/elysium/extw-integ:${{ steps.tag.outputs.new_tag }} .       
       - name: Update and push extw-integ helm chart
