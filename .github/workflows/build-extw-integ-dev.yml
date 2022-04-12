@@ -3,8 +3,8 @@ name: DEV - Deploy external wallet integrations
 on:
   workflow_dispatch:
   push:
-  	branches:
-		  - master
+    branches:
+      - master
   path-ignore:
     - 'charts/rgs-v2/Chart.yaml'
     - '**/.gitignore'
@@ -15,12 +15,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-    	# (check/change BUILDER_TOKEN so that it is unique for the extw-integ project) 
+      # (check/change BUILDER_TOKEN so that it is unique for the extw-integ project) 
       BUILDER_TOKEN: ${{ secrets.BUILDER_TOKEN  }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
 #   needs: test   
-		steps:
+    steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: "0"
