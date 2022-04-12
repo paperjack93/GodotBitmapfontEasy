@@ -5,10 +5,10 @@ on:
   push:
     branches:
       - master
-  paths-ignore:
-    - 'charts/extw-integ/Chart.yaml'
-    - '**/.gitignore'
-    - '.github/**'
+    paths-ignore:
+      - 'charts/extw-integ/Chart.yaml'
+      - '**/.gitignore'
+      - '.github/**'
 
 jobs:
 # skip test job until tests have been enabled in common.jar
