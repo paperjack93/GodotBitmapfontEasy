@@ -1,0 +1,76 @@
+# Default values for extw-integ-v1.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: elysium
+
+image:
+  repo: "harbor.elysiumstudios.se/elysium/"
+  name: "extw-integ"
+
+imagePullSecrets:
+  - name: harborcred
+
+nameOverride: ""
+fullnameOverride: ""
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 60
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/http2-push-preload: "true"
+    field.cattle.io/ingressState: "{}"
+    nginx.ingress.kubernetes.io/configuration-snippet: "more_set_headers \"Access-Control-Expose-Headers: ETag\";"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type, If-Match"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS, PUT"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-max-age: "151200"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+  hosts:
+    - host: dev.elysiumstudios.se
+      paths:
+        - path: /v1
+          pathType: Prefix
+  tls: []
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+# volumes:
+
+affinity: {}

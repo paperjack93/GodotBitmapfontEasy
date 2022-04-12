@@ -1,0 +1,138 @@
+fullnameOverride: extw-integ
+
+revisionHistoryLimit: 0
+
+image:
+  image: dashur-integ/extw-integ
+
+configmaps:
+  - path: /deployments/config/application.properties
+    src: application.properties
+
+secrets:
+  envs:
+    - name: SECRET_EXTW_EVERYMATRIX_CO1_HASH_PASSWORD
+      secretName: extw-credentials
+      key: extw_everymatrix_co1_hashpassword
+    - name: SECRET_EXTW_EVERYMATRIX_CO1_HMAC_KEY
+      secretName: extw-credentials
+      key: extw_everymatrix_co1_hmac_key
+    - name: SECRET_EXTW_EVERYMATRIX_CO1_CLIENT_ID
+      secretName: extw-credentials
+      key: extw_everymatrix_co1_client_id
+    - name: SECRET_EXTW_EVERYMATRIX_CO1_CLIENT_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_everymatrix_co1_client_credential
+    - name: SECRET_EXTW_EVERYMATRIX_CO1_API_ID
+      secretName: extw-credentials
+      key: extw_everymatrix_co1_api_id
+    - name: SECRET_EXTW_EVERYMATRIX_CO1_API_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_everymatrix_co1_api_credential
+
+    - name: SECRET_EXTW_EVERYMATRIX_CO2_HASH_PASSWORD
+      secretName: extw-credentials
+      key: extw_everymatrix_co2_hashpassword
+    - name: SECRET_EXTW_EVERYMATRIX_CO2_HMAC_KEY
+      secretName: extw-credentials
+      key: extw_everymatrix_co2_hmac_key
+    - name: SECRET_EXTW_EVERYMATRIX_CO2_CLIENT_ID
+      secretName: extw-credentials
+      key: extw_everymatrix_co2_client_id
+    - name: SECRET_EXTW_EVERYMATRIX_CO2_CLIENT_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_everymatrix_co2_client_credential
+    - name: SECRET_EXTW_EVERYMATRIX_CO2_API_ID
+      secretName: extw-credentials
+      key: extw_everymatrix_co2_api_id
+    - name: SECRET_EXTW_EVERYMATRIX_CO2_API_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_everymatrix_co2_api_credential
+
+    - name: SECRET_EXTW_PARIMATCH_CO1_HMAC_KEY
+      secretName: extw-credentials
+      key: extw_parimatch_co1_hmac_key
+    - name: SECRET_EXTW_PARIMATCH_CO1_CLIENT_ID
+      secretName: extw-credentials
+      key: extw_parimatch_co1_client_id
+    - name: SECRET_EXTW_PARIMATCH_CO1_CLIENT_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_parimatch_co1_client_credential
+    - name: SECRET_EXTW_PARIMATCH_CO1_API_ID
+      secretName: extw-credentials
+      key: extw_parimatch_co1_api_id
+    - name: SECRET_EXTW_PARIMATCH_CO1_API_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_parimatch_co1_api_credential
+
+    - name: SECRET_EXTW_PARIMATCH_CO2_HMAC_KEY
+      secretName: extw-credentials
+      key: extw_parimatch_co2_hmac_key
+    - name: SECRET_EXTW_PARIMATCH_CO2_CLIENT_ID
+      secretName: extw-credentials
+      key: extw_parimatch_co2_client_id
+    - name: SECRET_EXTW_PARIMATCH_CO2_CLIENT_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_parimatch_co2_client_credential
+    - name: SECRET_EXTW_PARIMATCH_CO2_API_ID
+      secretName: extw-credentials
+      key: extw_parimatch_co2_api_id
+    - name: SECRET_EXTW_PARIMATCH_CO2_API_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_parimatch_co2_api_credential
+
+    - name: SECRET_EXTW_QT_HASHKEY
+      secretName: extw-credentials
+      key: extw_qt_hashkey
+
+    - name: SECRET_EXTW_QT_CO1_PASSKEY
+      secretName: extw-credentials
+      key: extw_qt_co1_pass_key
+    - name: SECRET_EXTW_QT_CO1_HMAC_KEY
+      secretName: extw-credentials
+      key: extw_qt_co1_hmac_key
+    - name: SECRET_EXTW_QT_CO1_CLIENT_ID
+      secretName: extw-credentials
+      key: extw_qt_co1_client_id
+    - name: SECRET_EXTW_QT_CO1_CLIENT_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_qt_co1_client_credential
+    - name: SECRET_EXTW_QT_CO1_API_ID
+      secretName: extw-credentials
+      key: extw_qt_co1_api_id
+    - name: SECRET_EXTW_QT_CO1_API_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_qt_co1_api_credential
+
+    - name: SECRET_EXTW_QT_CO2_PASSKEY
+      secretName: extw-credentials
+      key: extw_qt_co2_pass_key
+    - name: SECRET_EXTW_QT_CO2_HMAC_KEY
+      secretName: extw-credentials
+      key: extw_qt_co2_hmac_key
+    - name: SECRET_EXTW_QT_CO2_CLIENT_ID
+      secretName: extw-credentials
+      key: extw_qt_co2_client_id
+    - name: SECRET_EXTW_QT_CO2_CLIENT_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_qt_co2_client_credential
+    - name: SECRET_EXTW_QT_CO2_API_ID
+      secretName: extw-credentials
+      key: extw_qt_co2_api_id
+    - name: SECRET_EXTW_QT_CO2_API_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_qt_co2_api_credential
+
+routes:
+  - name: 'extw-exp-version'
+    condition:
+      pathRegex: '/v1/extw/exp/version'
+      method: GET
+  - name: 'extw-exp-everymatrix-launch'
+    condition:
+      pathRegex: '/v1/extw/exp/everymatrix/launch'
+      method: GET
+  - name: 'extw-exp-parimatch-launch'
+    condition:
+      pathRegex: '/v1/extw/exp/parimatch/launch'
+      method: GET
