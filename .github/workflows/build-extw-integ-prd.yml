@@ -1,0 +1,46 @@
+name: PRD - Deploy external wallet integrations
+
+on:
+  workflow_dispatch:
+
+jobs:
+# skip test job until tests have been enabled in common.jar
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # (check/change BUILDER_TOKEN so that it is unique for the extw-integ project) 
+      BUILDER_TOKEN: ${{ secrets.BUILDER_TOKEN  }}
+      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+      HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+#   needs: test   
+    steps:
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: "0"
+          token: ${{ env.BUILDER_TOKEN }}
+
+      - name: 'Get Current tag'
+        id: currenttag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+
+      - uses: actions/checkout@v2
+        with:
+          repository: Elysium-Studios/infrastructure
+          token: ${{ env.BUILDER_TOKEN }}
+          path: infrastructure
+          
+      - name: Update extw-integ release in flux repo
+        run: |
+          cd infrastructure/
+          sed -i -e 's/version:.*/version: "${{ steps.currenttag.outputs.tag }}"/g' prd/apps-infra/deployments/extw-integ/release.yaml
+          git config --global user.email "workflow@elysiumstudios.se"
+          git config --global user.name "EXTW-INTEG Workflow"
+          git add prd/apps-infra/deployments/extw-integ/release.yaml
+          git commit -m "Deploy extw-integ ${{ steps.currenttag.outputs.tag }}"
+          git push
