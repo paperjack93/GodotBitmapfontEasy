@@ -15,7 +15,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 autoscaling:
-  enabled: true
+  enabled: false
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 60
@@ -33,11 +33,11 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
+  type: NodePort
   port: 8080
 
 ingress:
-  enabled: true
+  enabled: false
   annotations:
     nginx.ingress.kubernetes.io/http2-push-preload: "true"
     field.cattle.io/ingressState: "{}"
@@ -74,3 +74,15 @@ tolerations: []
 # volumes:
 
 affinity: {}
+
+livenessProbe:
+  path: /
+  port: extw
+  initialDelaySeconds: 5
+  periodSeconds: 30
+
+readinessProbe:
+  path: /
+  port: extw
+  initialDelaySeconds: 5
+  periodSeconds: 30

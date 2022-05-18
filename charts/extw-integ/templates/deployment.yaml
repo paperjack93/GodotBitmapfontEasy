@@ -28,32 +28,23 @@ spec:
           image: "{{ .Values.image.repo }}{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
-            - name: extw-integ
+            - name: extw
               containerPort: 8080
               protocol: TCP
-#          livenessProbe:
-#            httpGet:
-#              path: {{ .Values.livenessProbe.path }}
-#              port: {{ .Values.livenessProbe.port }}
-#            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-#            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-#          readinessProbe:
-#            httpGet:
-#              path: {{ .Values.readinessProbe.path }}
-#              port: {{ .Values.readinessProbe.port }}
-#            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
-#            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: {{ .Values.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-#          volumeMounts:
-#            - mountPath: /internal/engine/engineConfigs/
-#              name: engineconfigs
-#            - mountPath: /config/
-#              name: baseconfigs
-#            - mountPath: /internal/parameterSelector/
-#              name: parameterconfig
-#            - mountPath: /internal/forceTool/forcedGameplays/
-#              name: forcetool
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -66,9 +57,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-#      volumes:
-#      {{- range .Values.volumes }}
-#        - configMap:
-#            name: {{ toYaml . }}
-#          name: {{ toYaml . }}
-#      {{- end }}

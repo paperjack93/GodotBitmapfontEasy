@@ -9,8 +9,9 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: extw-integ
+      targetPort: extw
       protocol: TCP
-      name: rgs
+      name: extw
+      nodePort: 30500
   selector:
     {{- include "extw-integ.selectorLabels" . | nindent 4 }}
