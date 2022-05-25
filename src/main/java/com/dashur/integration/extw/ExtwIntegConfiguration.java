@@ -6,6 +6,7 @@ import com.dashur.integration.extw.connectors.everymatrix.EveryMatrixConfigurati
 import com.dashur.integration.extw.connectors.parimatch.PariMatchConfiguration;
 import com.dashur.integration.extw.connectors.qt.QtConfiguration;
 import com.dashur.integration.extw.connectors.vgs.VgsConfiguration;
+import com.dashur.integration.extw.connectors.relaxgaming.RelaxGamingConfiguration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,6 +80,9 @@ public class ExtwIntegConfiguration {
             break;
           case Constant.OPERATOR_VGS:
             this.operators.put(code, new VgsConfiguration().configure(config));
+            break;
+          case Constant.OPERATOR_RELAXGAMING:
+            this.operators.put(code, new RelaxGamingConfiguration().configure(config));
             break;
           default:
             throw new ApplicationException("Not supported operator code - [%s]", code);

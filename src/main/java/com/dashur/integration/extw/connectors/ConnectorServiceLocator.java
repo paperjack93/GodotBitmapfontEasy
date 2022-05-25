@@ -26,6 +26,11 @@ public class ConnectorServiceLocator {
   @Named("vgs-connector")
   ConnectorService vgs;
 */
+
+  @Inject
+  @Named("relaxgaming-connector")
+  ConnectorService relaxgaming;
+
   /**
    * @param operatorCode operator code
    * @return
@@ -47,6 +52,10 @@ public class ConnectorServiceLocator {
       return vgs;
     }
 */
+    if (Constant.OPERATOR_RELAXGAMING.equals(operatorCode)) {
+      return relaxgaming;
+    }
+
     throw new ApplicationException(
         "Unable to find connector for operator with code [%s]", operatorCode);
   }
