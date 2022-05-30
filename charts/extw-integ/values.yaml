@@ -86,3 +86,29 @@ readinessProbe:
   port: extw
   initialDelaySeconds: 5
   periodSeconds: 30
+
+configmaps:
+  - path: /deployments/config/application.properties
+    src: application.properties
+
+secrets:
+  envs:
+    - name: SECRET_EXTW_RELAXGAMING_OPERATOR_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_relaxgaming_co1_op_credential
+    - name: SECRET_EXTW_RELAXGAMING_CO1_HMAC_KEY
+      secretName: extw-credentials
+      key: extw_relaxgaming_co1_hmac_key
+    - name: SECRET_EXTW_RELAXGAMING_CO1_CLIENT_ID
+      secretName: extw-credentials
+      key: extw_relaxgaming_co1_client_id
+    - name: SECRET_EXTW_RELAXGAMING_CO1_CLIENT_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_relaxgaming_co1_client_credential
+    - name: SECRET_EXTW_RELAXGAMING_CO1_API_ID
+      secretName: extw-credentials
+      key: extw_relaxgaming_co1_api_id
+    - name: SECRET_EXTW_RELAXGAMING_CO1_API_CREDENTIAL
+      secretName: extw-credentials
+      key: extw_relaxgaming_co1_api_credential
+      

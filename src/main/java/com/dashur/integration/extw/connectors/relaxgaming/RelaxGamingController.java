@@ -26,6 +26,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -37,6 +38,7 @@ import org.jboss.resteasy.spi.HttpRequest;
 @Path("/v1/extw/exp/relaxgaming")
 public class RelaxGamingController {
   static final String OPERATOR_CODE = Constant.OPERATOR_RELAXGAMING;
+  static final String AUTHORIZATION = "Authorization";
 
   @Inject ExtwIntegConfiguration config;
 
@@ -134,7 +136,11 @@ public class RelaxGamingController {
   @Path("/games/getgames")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public GetGamesResponse getGames(final ServiceRequest request) {
+  public Response getGames(
+    @HeaderParam(AUTHORIZATION) String auth, final ServiceRequest request) {
+    if (!authenticate(auth, request.getCredentials().getPartnerId())) {
+      return Response.status(401).build();
+    }
     if (log.isDebugEnabled()) {
       log.debug(
           "/v1/extw/exp/relaxgaming/games/getgames - [{}] [{}]",
@@ -145,14 +151,19 @@ public class RelaxGamingController {
     String partnerId = String.valueOf(request.getCredentials().getPartnerId());
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
 
-    return new GetGamesResponse();
+    GetGamesResponse resp = new GetGamesResponse();
+    return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
   }
 
   @POST
   @Path("/round/getstate")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public GetStateResponse getState(final GetStateRequest request) {
+  public Response getState(
+    @HeaderParam(AUTHORIZATION) String auth, final GetStateRequest request) {
+    if (!authenticate(auth, request.getCredentials().getPartnerId())) {
+      return Response.status(401).build();
+    }
     if (log.isDebugEnabled()) {
       log.debug(
           "/v1/extw/exp/relaxgaming/state/getstate - [{}] [{}] [{}]",
@@ -164,16 +175,21 @@ public class RelaxGamingController {
     String partnerId = String.valueOf(request.getCredentials().getPartnerId());
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
 
-    return new GetStateResponse();
+    GetStateResponse resp = new GetStateResponse();
+    return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
   }
 
 
   @POST
-  @Path("/repley/get")
+  @Path("/replay/get")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public GetReplayResponse getPlaycheck(final GetReplayRequest request) {
+  public Response getPlaycheck(
+    @HeaderParam(AUTHORIZATION) String auth, final GetReplayRequest request) {
     try {
+      if (!authenticate(auth, request.getCredentials().getPartnerId())) {
+        return Response.status(401).build();
+      }
       if (log.isDebugEnabled()) {
         log.debug(
             "/v1/extw/exp/relaxgaming/game-state - [{}] [{}]",
@@ -193,14 +209,14 @@ public class RelaxGamingController {
               setting.getLauncherAppApiCredential(),
               request.getRoundId());
 
-      GetReplayResponse response = new GetReplayResponse();
-      response.setReplayUrl(url);
-      return response;
+      GetReplayResponse resp = new GetReplayResponse();
+      resp.setReplayUrl(url);
+      return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
 
     } catch (Exception e) {
       log.error("Unable to get playcheck [{}] - [{}]", 
         request.getCredentials().getPartnerId(), request.getRoundId(), e);
-      return new GetReplayResponse();
+        return Response.status(500).build();
     }
   }
 
@@ -301,5 +317,20 @@ public class RelaxGamingController {
       log.debug("Unable to resolve language, return default 'en'");
       return Locale.ENGLISH;
     }
+  }
+
+  /**
+   * validate request
+   * 
+   * @param credentials
+   * @return
+   */
+  private boolean authenticate(String auth, Integer partnerId) {
+    if (getCompanySettings(String.valueOf(partnerId), false).getOperatorCredential() != auth) {
+//      throw new ValidationException("Basic authentication failed. Invalid credentials.")
+      log.error("Basic authentication failed. Invalid credentials.");
+      return false;
+    }
+    return true;
   }
 }

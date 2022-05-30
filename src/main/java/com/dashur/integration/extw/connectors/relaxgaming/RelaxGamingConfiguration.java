@@ -93,6 +93,14 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
               UUID.randomUUID().toString(),
               config,
               companyId.toString());
+      String operatorCredential =
+          value(
+              CONFIG_PREFIX,
+              "co.%s.operator-credential",
+              String.class,
+              UUID.randomUUID().toString(),
+              config,
+              companyId.toString());
       String hmacKey =
           value(
               CONFIG_PREFIX,
@@ -147,6 +155,7 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
               .companyId(companyId)
               .launcherItemApplicationId(applicationId)
               .partnerId(partnerId)
+              .operatorCredential(operatorCredential)
               .hmacKey(hmacKey)
               .launcherAppClientId(clientId)
               .launcherAppClientCredential(clientCredential)
@@ -158,6 +167,7 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
       companySettings.put(companyId, setting);
     }
 
+    log.debug("relax config: {}", CommonUtils.jsonToString(this));
     return this;
   }
 
@@ -167,6 +177,7 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
     private Long companyId;
     private Long launcherItemApplicationId;
     private String partnerId;
+    private String operatorCredential;
     private String hmacKey;
     private String launcherAppClientId;
     private String launcherAppClientCredential;

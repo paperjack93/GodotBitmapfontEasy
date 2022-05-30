@@ -73,9 +73,11 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
     try {
       RelaxGamingConfiguration.CompanySetting setting =
           relaxConfig.getCompanySettings().get(companyId);
+      String auth = setting.getOperatorCredential();
+      String partnerId = setting.getPartnerId();
       RelaxGamingClientService clientService = clientService(companyId);
       VerifyTokenRequest operatorReq = (VerifyTokenRequest) Utils.map(request);
-      VerifyTokenResponse operatorRes = clientService.verifyToken(operatorReq);
+      VerifyTokenResponse operatorRes = clientService.verifyToken(auth, partnerId, operatorReq);
       return (DasAuthResponse) Utils.map(request, operatorRes);
     } catch (WebApplicationException e) {
       throw Utils.toException(e);
@@ -87,9 +89,11 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
     try {
       RelaxGamingConfiguration.CompanySetting setting =
           relaxConfig.getCompanySettings().get(companyId);
+      String auth = setting.getOperatorCredential();
+      String partnerId = setting.getPartnerId();
       RelaxGamingClientService clientService = clientService(companyId);
       BalanceRequest operatorReq = (BalanceRequest) Utils.map(request);
-      BalanceResponse operatorRes = clientService.getBalance(operatorReq);
+      BalanceResponse operatorRes = clientService.getBalance(auth, partnerId, operatorReq);
       return (DasBalanceResponse) Utils.map(request, operatorRes);
     } catch (WebApplicationException e) {
       throw Utils.toException(e);
@@ -102,18 +106,20 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
       RelaxGamingConfiguration.CompanySetting setting =
           relaxConfig.getCompanySettings().get(companyId);
       RelaxGamingClientService clientService = clientService(companyId);
+      String auth = setting.getOperatorCredential();
+      String partnerId = setting.getPartnerId();
 
       if (DasTransactionCategory.WAGER == request.getCategory()) {        
         WithdrawRequest operatorReq = (WithdrawRequest) Utils.map(request);
-        TransactionResponse operatorRes = clientService.withdraw(operatorReq);
+        TransactionResponse operatorRes = clientService.withdraw(auth, partnerId, operatorReq);
         return (DasTransactionResponse) Utils.map(request, operatorRes);
       } else if (DasTransactionCategory.PAYOUT == request.getCategory()) {
         DepositRequest operatorReq = (DepositRequest) Utils.map(request);
-        TransactionResponse operatorRes = clientService.deposit(operatorReq);
+        TransactionResponse operatorRes = clientService.deposit(auth, partnerId, operatorReq);
         return (DasTransactionResponse) Utils.map(request, operatorRes);
       } else if (DasTransactionCategory.REFUND == request.getCategory()) {
         RollbackRequest operatorReq = (RollbackRequest) Utils.map(request);
-        TransactionResponse operatorRes = clientService.rollback(operatorReq);
+        TransactionResponse operatorRes = clientService.rollback(auth, partnerId, operatorReq);
         return (DasTransactionResponse) Utils.map(request, operatorRes);
       }
     } catch (WebApplicationException e) {
@@ -129,9 +135,11 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
     try {
       RelaxGamingConfiguration.CompanySetting setting =
           relaxConfig.getCompanySettings().get(companyId);
+      String auth = setting.getOperatorCredential();
+      String partnerId = setting.getPartnerId();
       RelaxGamingClientService clientService = clientService(companyId);
       DepositRequest operatorReq = (DepositRequest) Utils.map(request);
-      TransactionResponse operatorRes = clientService.deposit(operatorReq);
+      TransactionResponse operatorRes = clientService.deposit(auth, partnerId, operatorReq);
       return (DasEndRoundResponse) Utils.map(request, operatorRes);
     } catch (WebApplicationException e) {
       throw Utils.toException(e);
