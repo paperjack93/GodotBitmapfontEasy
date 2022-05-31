@@ -31,7 +31,7 @@ data:
     com.dashur.integration.extw.connectors.relaxgaming.RelaxGamingClientService/mp-rest/url=https://dev-p2p.api.relaxg.net:7006
 
     extw.version="@version@"
-    extw.operators=everymatrix,parimatch,qt,vgs
+    extw.operators=everymatrix,parimatch,relaxgaming
     extw.operator.everymatrix.default-company-id=2608225
     extw.operator.everymatrix.debug=true
     extw.operator.everymatrix.mode=dev
