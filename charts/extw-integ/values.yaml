@@ -71,7 +71,8 @@ nodeSelector: {}
 
 tolerations: []
 
-# volumes:
+volumes:
+  - properties
 
 affinity: {}
 
@@ -93,22 +94,22 @@ configmaps:
 
 secrets:
   envs:
-    - name: SECRET_EXTW_RELAXGAMING_OPERATOR_CREDENTIAL
+    - name: SECRET_EXTW_RELAXGAMING_366276199_OPERATOR_CREDENTIAL
       secretName: extw-credentials
-      key: extw_relaxgaming_co1_op_credential
-    - name: SECRET_EXTW_RELAXGAMING_CO1_HMAC_KEY
+      key: extw_relaxgaming_366276199_op_credential
+    - name: SECRET_EXTW_RELAXGAMING_366276199_HMAC_KEY
       secretName: extw-credentials
-      key: extw_relaxgaming_co1_hmac_key
-    - name: SECRET_EXTW_RELAXGAMING_CO1_CLIENT_ID
+      key: extw_relaxgaming_366276199_hmac_key
+    - name: SECRET_EXTW_RELAXGAMING_366276199_CLIENT_ID
       secretName: extw-credentials
-      key: extw_relaxgaming_co1_client_id
-    - name: SECRET_EXTW_RELAXGAMING_CO1_CLIENT_CREDENTIAL
+      key: extw_relaxgaming_366276199_client_id
+    - name: SECRET_EXTW_RELAXGAMING_366276199_CLIENT_CREDENTIAL
       secretName: extw-credentials
-      key: extw_relaxgaming_co1_client_credential
-    - name: SECRET_EXTW_RELAXGAMING_CO1_API_ID
+      key: extw_relaxgaming_366276199_client_credential
+    - name: SECRET_EXTW_RELAXGAMING_366276199_API_ID
       secretName: extw-credentials
-      key: extw_relaxgaming_co1_api_id
-    - name: SECRET_EXTW_RELAXGAMING_CO1_API_CREDENTIAL
+      key: extw_relaxgaming_366276199_api_id
+    - name: SECRET_EXTW_RELAXGAMING_366276199_API_CREDENTIAL
       secretName: extw-credentials
-      key: extw_relaxgaming_co1_api_credential
+      key: extw_relaxgaming_366276199_api_credential
       

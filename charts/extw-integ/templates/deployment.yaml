@@ -45,6 +45,19 @@ spec:
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /deployments/config/
+              name: properties
+          env:
+          {{- range .Values.secrets.envs }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName }}
+                  key: {{ .key }}
+                  optional: true
+          {{- end }}
+
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -56,4 +69,10 @@ spec:
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- range .Values.volumes }}
+        - configMap:
+            name: {{ toYaml . }}
+          name: {{ toYaml . }}
       {{- end }}
