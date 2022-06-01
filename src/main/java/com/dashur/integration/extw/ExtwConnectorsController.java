@@ -54,15 +54,14 @@ public class ExtwConnectorsController {
       @PathParam("companyId") Long companyId,
       @PathParam("api") String api,
       String data) {
-    System.out.format("input : [%s - %s - %s - %s]\n", operator, companyId, api, data);
 
     Date start = new Date();
     connectorLocator.getConnector(operator).validate(companyId, hmacHash, data);
     DasResponse response;
     DasRequest request = null;
 
-//    log.trace("input : [{} - {} - {} - {}]", operator, companyId, api, data);
-    System.out.format("input : [%s - %s - %s - %s]", operator, companyId, api, data);
+    log.trace("input : [{} - {} - {} - {}]", operator, companyId, api, data);
+//    System.out.format("input : [%s - %s - %s - %s]", operator, companyId, api, data);
 
     try {
       switch (api) {

@@ -26,7 +26,8 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
   private boolean debug;
   private boolean validateIps;
   private Set<String> whitelistIps;
-  private String partnerId;
+  private String platform;
+  private String gamestudio;
   private Map<String, Long> operatorIdMap;
   private Map<Long, CompanySetting> companySettings;
 
@@ -48,8 +49,10 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
   public Configuration configure(Config config) {
     defaultCompanyId = value(CONFIG_PREFIX, "default-company-id", Long.class, 1L, config);
     debug = value(CONFIG_PREFIX, "debug", Boolean.class, Boolean.FALSE, config);
-    partnerId =
-        value(CONFIG_PREFIX, "partner-id", String.class, UUID.randomUUID().toString(), config);
+    platform = value(CONFIG_PREFIX, 
+      "platform", String.class, UUID.randomUUID().toString(), config);
+    gamestudio = value(CONFIG_PREFIX, 
+      "gamestudio", String.class, UUID.randomUUID().toString(), config);
     validateIps = value(CONFIG_PREFIX, "ip.validate", Boolean.class, Boolean.FALSE, config);
     String ips = value(CONFIG_PREFIX, "ip.whitelist", String.class, "", config);
 
@@ -85,10 +88,18 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
       Long applicationId =
           value(
               CONFIG_PREFIX, "co.%s.application-id", Long.class, 0L, config, companyId.toString());
-      String partnerId =
+      Integer partnerId =
           value(
               CONFIG_PREFIX,
               "co.%s.partner-id",
+              Integer.class,
+              10,
+              config,
+              companyId.toString());
+      String channel =
+          value(
+              CONFIG_PREFIX,
+              "co.%s.channel",
               String.class,
               UUID.randomUUID().toString(),
               config,
@@ -155,6 +166,7 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
               .companyId(companyId)
               .launcherItemApplicationId(applicationId)
               .partnerId(partnerId)
+              .channel(channel)
               .operatorCredential(operatorCredential)
               .hmacKey(hmacKey)
               .launcherAppClientId(clientId)
@@ -176,7 +188,8 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
   public static class CompanySetting {
     private Long companyId;
     private Long launcherItemApplicationId;
-    private String partnerId;
+    private Integer partnerId;
+    private String channel;
     private String operatorCredential;
     private String hmacKey;
     private String launcherAppClientId;

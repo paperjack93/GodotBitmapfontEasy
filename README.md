@@ -1,3 +1,14 @@
+# EXTW-INTEG
+
+A service for the external wallet API and operator required endpoints.
+
+# configuration
+
+When running a local instance the application.properies configuration is read from the src/main/resources/ folder. The deployed configuration
+is sourced from /charts/extw-integ/ (TODO: support one configuration per environment) and copied to the Docker image /deployments/config folder.
+
+The /etc folder is unused and only temporary for legacy reference.
+
 # code-with-quarkus Project
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.

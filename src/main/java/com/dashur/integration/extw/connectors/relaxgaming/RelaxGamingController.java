@@ -17,6 +17,8 @@ import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateR
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -101,25 +103,36 @@ public class RelaxGamingController {
       @QueryParam("gameid") String gameId,
       @QueryParam("ticket") String token,
       @QueryParam("lang") String language,
+      @QueryParam("channel") String channel,
       @QueryParam("partnerId") String partnerId,
       @QueryParam("moneymode") String mode,
       @QueryParam("currency") String demoCurrency,
-      @QueryParam("channel") String platform,
+      @QueryParam("clientid") String clientId,
       @QueryParam("homeurl") @DefaultValue("") String lobbyUrl) {
     try {
       if (log.isDebugEnabled()) {
         log.debug(
-            "/v1/extw/exp/relaxgaming/launch - [{}] [{}] [{}] [{}] [{}] [{}]",
+            "/v1/extw/exp/relaxgaming/launch - [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}]",
             gameId,
             language,
+            channel,
             partnerId,
             mode,
             demoCurrency,
-            platform,
+            clientId,
             lobbyUrl);
       }
 
-      return getLauncherInternal(gameId, token, language, partnerId, mode, demoCurrency, lobbyUrl);
+      return getLauncherInternal(
+        gameId, 
+        token, 
+        language, 
+        channel, 
+        partnerId, 
+        mode, 
+        demoCurrency,
+        clientId, 
+        lobbyUrl);
     } catch (Exception e) {
       log.error("Unable to launch game [{}] - [{}]", gameId, partnerId, e);
       return Response.serverError()
@@ -226,9 +239,11 @@ public class RelaxGamingController {
    * @param gameId
    * @param token
    * @param language
+   * @param channel
    * @param partnerId
    * @param mode
    * @param demoCurrency
+   * @param clientId
    * @param lobbyUrl
    * @return
    */
@@ -236,22 +251,33 @@ public class RelaxGamingController {
       String gameId,
       String token,
       String language,
+      String channel,
       String partnerId,
       String mode,
       String demoCurrency,
+      String clientId,
       String lobbyUrl) {
-    if (!partnerId.equals(relaxConfig.getPartnerId())) {
-      throw new ValidationException("partner-id is invalid [%s]", partnerId);
-    }
 
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
+    if (!channel.equals(setting.getChannel())) {
+      throw new ValidationException("channel [%s] is invalid for partnerId [%s]", channel, partnerId);
+    }
 
     Boolean isDemo = mode == "fun";
 
+    Map<String, Object> metaData = new HashMap<String, Object>();
+    metaData.put("clientId", clientId);
+    metaData.put("gameRef", getGameRef(gameId));
+    RequestContext ctx = RequestContext.instance()
+                                       .withLanguage(language)
+                                       .withMetaData(metaData);
+    if (isDemo) {
+      ctx = ctx.withCurrency(demoCurrency);
+    }
+
     String url =
         service.launchUrl(
-            isDemo ? RequestContext.instance().withLanguage(language) : 
-              RequestContext.instance().withCurrency(demoCurrency).withLanguage(language),
+            ctx,
             setting.getLauncherAppClientId(),
             setting.getLauncherAppClientCredential(),
             setting.getLauncherAppApiId(),
@@ -332,5 +358,18 @@ public class RelaxGamingController {
       return false;
     }
     return true;
+  }
+
+  /**
+   * getGameRef
+   * 
+   * @param gameId
+   * @return
+   */
+  private String getGameRef(String gameId) {
+    return String.format("rlx.%s.%s.%s", 
+      relaxConfig.getPlatform(), 
+      relaxConfig.getGamestudio(),
+      gameId);
   }
 }
