@@ -25,8 +25,7 @@ public interface RelaxGamingClientService {
   static final String PARTNERID = "partnerid";
 
   @POST
-//  @Path("/{partnerid}/verifytoken")
-  @Path("/{" + PARTNERID + "}/verifytoken")
+  @Path("/{partnerid}/verifytoken")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   VerifyTokenResponse verifyToken(

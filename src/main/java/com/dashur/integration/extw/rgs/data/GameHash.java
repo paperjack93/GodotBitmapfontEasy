@@ -1,9 +1,6 @@
-package com.dashur.integration.extw.connectors.relaxgaming.data.service;
+package com.dashur.integration.extw.rgs.data;
 
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,12 +12,23 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
-public class GetGamesResponse {
+public class GameHash {
 
-  @JsonProperty("games")
-  private List<GameInfo> games;
+  @JsonProperty("item_id")
+  private String itemId;
 
+  @JsonProperty("name")
+  private String name;
+
+  @JsonProperty("config")
+  private String config;
+
+  @JsonProperty("md5_digest")
+  private String md5Digest;
+
+  @JsonProperty("sha1_digest")
+  private String sha1Digest;
+  
 }

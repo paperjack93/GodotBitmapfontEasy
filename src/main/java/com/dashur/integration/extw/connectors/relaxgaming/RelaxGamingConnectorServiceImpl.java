@@ -242,13 +242,18 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
       } 
 
       if (request instanceof DasAuthRequest) {
+        String ip = metaData.getOrDefault(
+          com.dashur.integration.commons.Constant.LAUNCHER_META_DATA_KEY_IP_ADDRESS, "").toString();
+        if (ip.isEmpty()) {
+          throw new ValidationException("Unable to resolve player ip address");
+        }
         VerifyTokenRequest operatorReq = new VerifyTokenRequest();
         operatorReq.setChannel(settings.getChannel());
         operatorReq.setClientId(clientId);
         operatorReq.setToken(request.getToken());
         operatorReq.setGameRef(gameRef);
         operatorReq.setPartnerId(settings.getPartnerId());
-        operatorReq.setIp("127.0.0.1");     // TODO: get this from the request context?
+        operatorReq.setIp(ip);     // TODO: get this from the request context?
         operatorReq.setTimestamp();
         operatorReq.setRequestId(request.getReqId());
         output = operatorReq;

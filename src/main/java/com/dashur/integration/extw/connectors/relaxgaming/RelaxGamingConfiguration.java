@@ -28,6 +28,7 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
   private Set<String> whitelistIps;
   private String platform;
   private String gamestudio;
+  private String rgsProvider;
   private Map<String, Long> operatorIdMap;
   private Map<Long, CompanySetting> companySettings;
 
@@ -53,6 +54,8 @@ public class RelaxGamingConfiguration extends AbstractOperatorConfiguration {
       "platform", String.class, UUID.randomUUID().toString(), config);
     gamestudio = value(CONFIG_PREFIX, 
       "gamestudio", String.class, UUID.randomUUID().toString(), config);
+    rgsProvider = value(CONFIG_PREFIX, 
+      "rgs.provider", String.class, UUID.randomUUID().toString(), config);
     validateIps = value(CONFIG_PREFIX, "ip.validate", Boolean.class, Boolean.FALSE, config);
     String ips = value(CONFIG_PREFIX, "ip.whitelist", String.class, "", config);
 

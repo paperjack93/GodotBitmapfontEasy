@@ -8,6 +8,7 @@ import com.dashur.integration.extw.Constant;
 import com.dashur.integration.extw.ExtwIntegConfiguration;
 import com.dashur.integration.extw.Service;
 import com.dashur.integration.extw.connectors.ConnectorServiceLocator;
+import com.dashur.integration.extw.connectors.relaxgaming.data.service.GameInfo;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.Credentials;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.ServiceRequest;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetGamesResponse;
@@ -15,11 +16,15 @@ import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetReplay
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetReplayResponse;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateRequest;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateResponse;
+import com.dashur.integration.extw.rgs.RgsService;
+import com.dashur.integration.extw.rgs.data.GameHash;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.List;
+import java.util.ArrayList;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -47,6 +52,8 @@ public class RelaxGamingController {
   @Inject ConnectorServiceLocator connectorLocator;
 
   @Inject Service service;
+
+  @Inject RgsService rgsService;
 
   @Context HttpRequest request;
 
@@ -104,23 +111,27 @@ public class RelaxGamingController {
       @QueryParam("ticket") String token,
       @QueryParam("lang") String language,
       @QueryParam("channel") String channel,
-      @QueryParam("partnerId") String partnerId,
+      @QueryParam("partnerid") String partnerId,
       @QueryParam("moneymode") String mode,
       @QueryParam("currency") String demoCurrency,
       @QueryParam("clientid") String clientId,
       @QueryParam("homeurl") @DefaultValue("") String lobbyUrl) {
     try {
+      String callerIp = CommonUtils.resolveIpAddress(this.request);
+
       if (log.isDebugEnabled()) {
         log.debug(
-            "/v1/extw/exp/relaxgaming/launch - [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}]",
+            "/v1/extw/exp/relaxgaming/launch - [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}]",
             gameId,
+            token,
             language,
             channel,
             partnerId,
             mode,
             demoCurrency,
             clientId,
-            lobbyUrl);
+            lobbyUrl,
+            callerIp);
       }
 
       return getLauncherInternal(
@@ -132,7 +143,8 @@ public class RelaxGamingController {
         mode, 
         demoCurrency,
         clientId, 
-        lobbyUrl);
+        lobbyUrl,
+        callerIp);
     } catch (Exception e) {
       log.error("Unable to launch game [{}] - [{}]", gameId, partnerId, e);
       return Response.serverError()
@@ -164,7 +176,19 @@ public class RelaxGamingController {
     String partnerId = String.valueOf(request.getCredentials().getPartnerId());
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
 
+    List<GameHash> rgsResp = rgsService.getProvider(relaxConfig.getRgsProvider()).gameHashes();
+    List<GameInfo> games = new ArrayList<GameInfo>();
     GetGamesResponse resp = new GetGamesResponse();
+    for ( GameHash hash : rgsResp) {
+      GameInfo game = new GameInfo();
+      game.setGameRef(getGameRef(hash.getItemId()));
+      game.setName(hash.getName());
+      game.setStudio(relaxConfig.getRgsProvider());
+
+      games.add(game);
+    }
+    resp.setGames(games);
+
     return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
   }
 
@@ -245,6 +269,7 @@ public class RelaxGamingController {
    * @param demoCurrency
    * @param clientId
    * @param lobbyUrl
+   * @param callerIp
    * @return
    */
   private Response getLauncherInternal(
@@ -256,7 +281,8 @@ public class RelaxGamingController {
       String mode,
       String demoCurrency,
       String clientId,
-      String lobbyUrl) {
+      String lobbyUrl,
+      String callerIp) {
 
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
     if (!channel.equals(setting.getChannel())) {
@@ -287,7 +313,8 @@ public class RelaxGamingController {
             isDemo,
             token,
             lobbyUrl,
-            null);
+            null,
+            callerIp);
 
     try {
       return Response.temporaryRedirect(new URI(url)).build();
@@ -352,9 +379,10 @@ public class RelaxGamingController {
    * @return
    */
   private boolean authenticate(String auth, Integer partnerId) {
-    if (getCompanySettings(String.valueOf(partnerId), false).getOperatorCredential() != auth) {
+    if (!getCompanySettings(String.valueOf(partnerId), false).getOperatorCredential().equals(auth)) {
 //      throw new ValidationException("Basic authentication failed. Invalid credentials.")
-      log.error("Basic authentication failed. Invalid credentials.");
+      log.error("Basic authentication failed. Invalid credentials. want [{}] got [{}]", 
+        getCompanySettings(String.valueOf(partnerId), false).getOperatorCredential(), auth);
       return false;
     }
     return true;
