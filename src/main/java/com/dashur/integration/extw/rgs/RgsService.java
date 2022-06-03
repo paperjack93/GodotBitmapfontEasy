@@ -21,6 +21,6 @@ public class RgsService {
     if (rgsProvider.equals(Provider.ELYSIUM.toString())) {
       return (RgsServiceProvider) elysiumRgs;
     }
-    throw new ApplicationException("Unsupported rgs provider [%s] != [%s]", rgsProvider, Provider.ELYSIUM.toString());
+    throw new ApplicationException("Unsupported rgs provider [%s]", rgsProvider);
    }
 }

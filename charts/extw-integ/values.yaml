@@ -90,7 +90,7 @@ readinessProbe:
 
 configmaps:
   - path: /deployments/config/application.properties
-    src: application.properties
+    src: application-dev.properties
 
 secrets:
   envs:

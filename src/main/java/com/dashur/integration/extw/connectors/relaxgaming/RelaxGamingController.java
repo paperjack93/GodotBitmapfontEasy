@@ -3,6 +3,7 @@ package com.dashur.integration.extw.connectors.relaxgaming;
 import com.dashur.integration.commons.RequestContext;
 import com.dashur.integration.commons.exception.ApplicationException;
 import com.dashur.integration.commons.exception.ValidationException;
+import com.dashur.integration.commons.exception.AuthException;
 import com.dashur.integration.commons.utils.CommonUtils;
 import com.dashur.integration.extw.Constant;
 import com.dashur.integration.extw.ExtwIntegConfiguration;
@@ -180,12 +181,14 @@ public class RelaxGamingController {
     List<GameInfo> games = new ArrayList<GameInfo>();
     GetGamesResponse resp = new GetGamesResponse();
     for ( GameHash hash : rgsResp) {
-      GameInfo game = new GameInfo();
-      game.setGameRef(getGameRef(hash.getItemId()));
-      game.setName(hash.getName());
-      game.setStudio(relaxConfig.getRgsProvider());
+      if (!hash.getItemId().isEmpty()) {
+        GameInfo game = new GameInfo();
+        game.setGameRef(getGameRef(hash.getItemId()));
+        game.setName(hash.getName());
+        game.setStudio(relaxConfig.getRgsProvider());
 
-      games.add(game);
+        games.add(game);
+      }
     }
     resp.setGames(games);
 
@@ -380,9 +383,7 @@ public class RelaxGamingController {
    */
   private boolean authenticate(String auth, Integer partnerId) {
     if (!getCompanySettings(String.valueOf(partnerId), false).getOperatorCredential().equals(auth)) {
-//      throw new ValidationException("Basic authentication failed. Invalid credentials.")
-      log.error("Basic authentication failed. Invalid credentials. want [{}] got [{}]", 
-        getCompanySettings(String.valueOf(partnerId), false).getOperatorCredential(), auth);
+      log.error("Basic authentication failed. Invalid credentials.");
       return false;
     }
     return true;
