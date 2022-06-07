@@ -88,13 +88,6 @@
         <groupId>org.javamoney</groupId>
         <artifactId>moneta</artifactId>
         <version>1.0</version>
-    </dependency>    
-    <dependency>
-      <groupId>com.dashur.integration</groupId>
-      <artifactId>commons</artifactId>
-      <version>1.0</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/commons.jar</systemPath>
     </dependency>
   </dependencies>
   <build>
