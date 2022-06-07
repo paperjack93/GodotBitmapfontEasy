@@ -41,6 +41,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
@@ -74,9 +75,9 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
       RelaxGamingConfiguration.CompanySetting setting =
           relaxConfig.getCompanySettings().get(companyId);
       String auth = setting.getOperatorCredential();
-      String partnerId = setting.getPartnerId();
+      Integer partnerId = setting.getPartnerId();
       RelaxGamingClientService clientService = clientService(companyId);
-      VerifyTokenRequest operatorReq = (VerifyTokenRequest) Utils.map(request);
+      VerifyTokenRequest operatorReq = (VerifyTokenRequest) Utils.map(request, setting);
       VerifyTokenResponse operatorRes = clientService.verifyToken(auth, partnerId, operatorReq);
       return (DasAuthResponse) Utils.map(request, operatorRes);
     } catch (WebApplicationException e) {
@@ -90,9 +91,9 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
       RelaxGamingConfiguration.CompanySetting setting =
           relaxConfig.getCompanySettings().get(companyId);
       String auth = setting.getOperatorCredential();
-      String partnerId = setting.getPartnerId();
+      Integer partnerId = setting.getPartnerId();
       RelaxGamingClientService clientService = clientService(companyId);
-      BalanceRequest operatorReq = (BalanceRequest) Utils.map(request);
+      BalanceRequest operatorReq = (BalanceRequest) Utils.map(request, setting);
       BalanceResponse operatorRes = clientService.getBalance(auth, partnerId, operatorReq);
       return (DasBalanceResponse) Utils.map(request, operatorRes);
     } catch (WebApplicationException e) {
@@ -107,18 +108,18 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
           relaxConfig.getCompanySettings().get(companyId);
       RelaxGamingClientService clientService = clientService(companyId);
       String auth = setting.getOperatorCredential();
-      String partnerId = setting.getPartnerId();
+      Integer partnerId = setting.getPartnerId();
 
       if (DasTransactionCategory.WAGER == request.getCategory()) {        
-        WithdrawRequest operatorReq = (WithdrawRequest) Utils.map(request);
+        WithdrawRequest operatorReq = (WithdrawRequest) Utils.map(request, setting);
         TransactionResponse operatorRes = clientService.withdraw(auth, partnerId, operatorReq);
         return (DasTransactionResponse) Utils.map(request, operatorRes);
       } else if (DasTransactionCategory.PAYOUT == request.getCategory()) {
-        DepositRequest operatorReq = (DepositRequest) Utils.map(request);
+        DepositRequest operatorReq = (DepositRequest) Utils.map(request, setting);
         TransactionResponse operatorRes = clientService.deposit(auth, partnerId, operatorReq);
         return (DasTransactionResponse) Utils.map(request, operatorRes);
       } else if (DasTransactionCategory.REFUND == request.getCategory()) {
-        RollbackRequest operatorReq = (RollbackRequest) Utils.map(request);
+        RollbackRequest operatorReq = (RollbackRequest) Utils.map(request, setting);
         TransactionResponse operatorRes = clientService.rollback(auth, partnerId, operatorReq);
         return (DasTransactionResponse) Utils.map(request, operatorRes);
       }
@@ -136,9 +137,9 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
       RelaxGamingConfiguration.CompanySetting setting =
           relaxConfig.getCompanySettings().get(companyId);
       String auth = setting.getOperatorCredential();
-      String partnerId = setting.getPartnerId();
+      Integer partnerId = setting.getPartnerId();
       RelaxGamingClientService clientService = clientService(companyId);
-      DepositRequest operatorReq = (DepositRequest) Utils.map(request);
+      DepositRequest operatorReq = (DepositRequest) Utils.map(request, setting);
       TransactionResponse operatorRes = clientService.deposit(auth, partnerId, operatorReq);
       return (DasEndRoundResponse) Utils.map(request, operatorRes);
     } catch (WebApplicationException e) {
@@ -224,17 +225,35 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
      * @param casinoId
      * @return
      */
-    static Request map(DasRequest request) {
+    static Request map(DasRequest request, RelaxGamingConfiguration.CompanySetting settings) {
       Request output;
 
+      log.debug("map request: {}", CommonUtils.jsonToString(request));
+
+      Map<String, Object> metaData = getMetaData(request);
+      String gameRef = metaData.getOrDefault("gameRef", "").toString();
+      String clientId = metaData.getOrDefault("clientId", "").toString();
+
+      if (gameRef.isEmpty()) {
+        throw new ValidationException("Unable to resolve gameRef");
+      } 
+      if (clientId.isEmpty()) {
+        throw new ValidationException("Unable to resolve clientId");
+      } 
+
       if (request instanceof DasAuthRequest) {
+        String ip = metaData.getOrDefault(
+          com.dashur.integration.commons.Constant.LAUNCHER_META_DATA_KEY_IP_ADDRESS, "").toString();
+        if (ip.isEmpty()) {
+          throw new ValidationException("Unable to resolve player ip address");
+        }
         VerifyTokenRequest operatorReq = new VerifyTokenRequest();
-        // operatorReq.setChannel(???);     // "web"
-        // operatorReq.setClientId(???);    // "android_app"
+        operatorReq.setChannel(settings.getChannel());
+        operatorReq.setClientId(clientId);
         operatorReq.setToken(request.getToken());
-        // operatorReq.setGameRef(???);     // "rlx.platx.studioy.bestslot"
-        // operatorReq.setPartnerId(???);   // 10 for dev env
-        // operatorReq.setIp(???);
+        operatorReq.setGameRef(gameRef);
+        operatorReq.setPartnerId(settings.getPartnerId());
+        operatorReq.setIp(ip);     // TODO: get this from the request context?
         operatorReq.setTimestamp();
         operatorReq.setRequestId(request.getReqId());
         output = operatorReq;
@@ -242,7 +261,7 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
         DasBalanceRequest balanceRequest = (DasBalanceRequest) request;
         BalanceRequest operatorReq = new BalanceRequest();
         operatorReq.setPlayerId(Integer.parseInt(balanceRequest.getAccountExtRef()));
-        // operatorReq.setGameRef(???);     // "rlx.platx.studioy.bestslot"
+        operatorReq.setGameRef(gameRef);
         operatorReq.setCurrency(balanceRequest.getCurrency());
         operatorReq.setSessionId(Long.parseLong(balanceRequest.getToken()));
         operatorReq.setTimestamp();
@@ -255,10 +274,10 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
           WithdrawRequest operatorReq = new WithdrawRequest();
           operatorReq.setPlayerId(Integer.parseInt(txRequest.getAccountExtRef()));
           operatorReq.setRoundId(txRequest.getRoundId());
-          // operatorReq.setGameRef(???);     // "rlx.platx.studioy.bestslot"
-          // operatorReq.setChannel(???);     // "web"
+          operatorReq.setGameRef(gameRef);
+          operatorReq.setChannel(settings.getChannel());
           operatorReq.setCurrency(txRequest.getCurrency());
-          // operatorReq.setClientId(???);    // "android_app"
+          operatorReq.setClientId(clientId);
           operatorReq.setTxId(String.valueOf(txRequest.getTxId()));
           operatorReq.setSessionId(Long.parseLong(txRequest.getToken()));
           operatorReq.setAmount(CommonUtils.toCents(txRequest.getAmount()).longValue());
@@ -272,10 +291,10 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
           DepositRequest operatorReq = new DepositRequest();
           operatorReq.setPlayerId(Integer.parseInt(txRequest.getAccountExtRef()));
           operatorReq.setRoundId(txRequest.getRoundId());
-          // operatorReq.setGameRef(???);     // "rlx.platx.studioy.bestslot"
-          // operatorReq.setChannel(???);     // "web"
+          operatorReq.setGameRef(gameRef);
+          operatorReq.setChannel(settings.getChannel());
           operatorReq.setCurrency(txRequest.getCurrency());
-          // operatorReq.setClientId(???);    // "android_app"
+          operatorReq.setClientId(clientId);
           operatorReq.setTxId(String.valueOf(txRequest.getTxId()));
           operatorReq.setSessionId(Long.parseLong(txRequest.getToken()));
           operatorReq.setAmount(CommonUtils.toCents(txRequest.getAmount()).longValue());
@@ -289,7 +308,7 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
           RollbackRequest operatorReq = new RollbackRequest();
           operatorReq.setPlayerId(Integer.parseInt(txRequest.getAccountExtRef()));
           operatorReq.setRoundId(txRequest.getRoundId());
-          // operatorReq.setGameRef(???);     // "rlx.platx.studioy.bestslot"
+          operatorReq.setGameRef(gameRef);
           operatorReq.setCurrency(txRequest.getCurrency());
           operatorReq.setTxId(String.valueOf(txRequest.getTxId()));
           // operatorReq.setOriginalTxId(String.valueOf(txRequest.getTxId()));  // same as txId?
@@ -308,10 +327,10 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
         DepositRequest operatorReq = new DepositRequest();
         operatorReq.setPlayerId(Integer.parseInt(endRequest.getAccountExtRef()));
         operatorReq.setRoundId(endRequest.getRoundId());
-        // operatorReq.setGameRef(???);     // "rlx.platx.studioy.bestslot"
-        // operatorReq.setChannel(???);     // "web"
+        operatorReq.setGameRef(gameRef);
+        operatorReq.setChannel(settings.getChannel());
         operatorReq.setCurrency(endRequest.getCurrency());
-        // operatorReq.setClientId(???);    // "android_app"
+        operatorReq.setClientId(clientId);
         operatorReq.setTxId(String.valueOf(endRequest.getTxId()));
         operatorReq.setSessionId(Long.parseLong(endRequest.getToken()));
         operatorReq.setAmount(0L);
@@ -458,6 +477,21 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
       return new ApplicationException(
           "Connector response [%s] - [%s] - events [%s]", 
             errorRes.getCode(), errorRes.getMessage(), errorRes.getEvents());
+    }
+
+    /**
+     * Get the opr_meta map from a request
+     *
+     * @param request
+     * @return
+     */
+    static Map<String,Object> getMetaData(DasRequest request) {
+      if (Objects.nonNull(request.getCtx())) {
+        return (Map<String,Object>)request.getCtx().getOrDefault(
+          com.dashur.integration.commons.Constant.LAUNCHER_META_DATA_KEY_OPR_META,
+          new HashMap<>());
+      }
+      return new HashMap<String,Object>();
     }
   }
 }

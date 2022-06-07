@@ -1,13 +1,5 @@
 package com.dashur.integration.extw.connectors.relaxgaming;
-/*
-import com.dashur.integration.extw.connectors.relaxgaming.data.BalanceRequest;
-import com.dashur.integration.extw.connectors.relaxgaming.data.BalanceResponse;
-import com.dashur.integration.extw.connectors.relaxgaming.data.BetRequest;
-import com.dashur.integration.extw.connectors.relaxgaming.data.CancelRequest;
-import com.dashur.integration.extw.connectors.relaxgaming.data.PromoRequest;
-import com.dashur.integration.extw.connectors.relaxgaming.data.TransactionResponse;
-import com.dashur.integration.extw.connectors.relaxgaming.data.WinRequest;
-*/
+
 import com.dashur.integration.extw.connectors.relaxgaming.data.AddFreeSpinsRequest;
 import com.dashur.integration.extw.connectors.relaxgaming.data.BalanceRequest;
 import com.dashur.integration.extw.connectors.relaxgaming.data.BalanceResponse;
@@ -37,7 +29,7 @@ public interface RelaxGamingClientService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   VerifyTokenResponse verifyToken(
-    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) String partnerId, 
+    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId, 
     final VerifyTokenRequest request);
 
   @POST
@@ -45,7 +37,7 @@ public interface RelaxGamingClientService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   TransactionResponse withdraw(
-    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) String partnerId, 
+    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId, 
     final WithdrawRequest request);
 
   @POST
@@ -53,7 +45,7 @@ public interface RelaxGamingClientService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   TransactionResponse deposit(
-    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) String partnerId, 
+    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId, 
     final DepositRequest request);
 
   @POST
@@ -61,7 +53,7 @@ public interface RelaxGamingClientService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   TransactionResponse rollback(
-    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) String partnerId, 
+    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId, 
     final RollbackRequest request);
 
   @POST
@@ -69,7 +61,7 @@ public interface RelaxGamingClientService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   BalanceResponse getBalance(
-    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) String partnerId, 
+    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId, 
     final BalanceRequest request);
 
   @POST
@@ -77,7 +69,7 @@ public interface RelaxGamingClientService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   TransactionResponse addFreespins(
-    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) String partnerId, 
+    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId, 
     final AddFreeSpinsRequest request);
 
   @POST
@@ -85,6 +77,6 @@ public interface RelaxGamingClientService {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   PingResponse ping(
-    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) String partnerId);
+    @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId);
 
 }

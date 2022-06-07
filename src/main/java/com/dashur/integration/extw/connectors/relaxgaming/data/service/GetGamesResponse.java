@@ -11,8 +11,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-// relax
-
 @Data
 @ToString
 @NoArgsConstructor
@@ -22,48 +20,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = false)
 public class GetGamesResponse {
 
-  class FreeRoundsInfo {
-    @JsonProperty("channels")
-    private List<String> channels;
-
-    @JsonProperty("featuretriggers")
-    private FeatureTriggerInfo featuretriggers;
-  }
-
-  class FeatureTriggerInfo {
-    @JsonProperty("channels")
-    private List<String> channels;
-  }
-
-  class RngInfo {
-    @JsonProperty("identification")
-    private String identification;
-
-    @JsonProperty("softwareid")
-    private String softwareId;
-  }
-
-  @JsonProperty("gameref")
-  private String gameRef;
-
-  @JsonProperty("name")
-  private String name;
-
-  @JsonProperty("studio")
-  private String studio;
-
-  @JsonProperty("freespins")
-  private FreeRoundsInfo freespins;
-
-  @JsonProperty("legalbetsizes")
-  private List<Integer> legalBetSizes;  // In euro cents
-
-  // optional
-
-  @JsonProperty("rng")
-  private RngInfo rngInfo;
-
-  @JsonProperty("category")
-  private String category;
+  @JsonProperty("games")
+  private List<GameInfo> games;
 
 }
