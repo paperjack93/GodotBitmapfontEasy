@@ -59,7 +59,7 @@ public class CacheProviderImpl implements CacheProvider {
       clientInitLock.writeLock().lock();
       clientConfig = new Config();
 
-      String address = "redis://redis:6379"; // String.format("redis://%s:%d", config.getCacheHost(), config.getCachePort());
+      String address = String.format("redis://%s:%d", config.getCacheHost(), config.getCachePort());
 
       log.debug("connecting to redis on {} with key {}", 
         address,
