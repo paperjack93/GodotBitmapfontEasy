@@ -75,6 +75,7 @@ public class CacheProviderImpl implements CacheProvider {
       clientVersion = new AtomicInteger(client.hashCode());
       prevClientVersion = new AtomicInteger(0);
       log.debug("connected with client version {}", clientVersion);
+      refresh();
       cacheConfigMap = new ConcurrentHashMap<>();
       cacheMap = new ConcurrentHashMap<>();
     } finally {
