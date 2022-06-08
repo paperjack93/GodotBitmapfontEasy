@@ -44,7 +44,7 @@ jobs:
           echo building extw-integ ${{ steps.tag.outputs.new_tag }}
           ./mvnw package
           docker login harbor.elysiumstudios.se -u ${{ env.HARBOR_USERNAME }} -p ${{ env.HARBOR_PASSWORD }}
-          docker-compose up --build
+          docker-compose build
           docker push "harbor.elysiumstudios.se/elysium/extw-integ:${{ steps.tag.outputs.new_tag }}"
           
       - name: Update and push extw-integ helm chart
