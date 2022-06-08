@@ -2,7 +2,7 @@ version: "3"
 
 services:
   extw-integ:
-    image: extw-integ
+    image: harbor.elysiumstudios.se/elysium/extw-integ:${BUILD_TAG}
     build:
       context: .
       dockerfile: src/main/docker/Dockerfile.jvm
