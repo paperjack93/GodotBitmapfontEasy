@@ -8,11 +8,11 @@ services:
       dockerfile: src/main/docker/Dockerfile.jvm
     ports:
       - "8080:8080"
-    links:
-      - redis
-    depends_on:
-      - redis
-  redis:
-    image: redis
-    ports:
-      - "6379:6379"
+#    links:
+#      - redis
+#    depends_on:
+#      - redis
+#  redis:
+#    image: redis
+#    ports:
+#      - "6379:6379"
