@@ -59,7 +59,11 @@ public class ExtwIntegConfiguration {
   @PostConstruct
   public void init() {
     System.out.println("init was called (System.out.println)");
+    System.out.println("init was called (System.out.println) 2");
+    System.out.println("init was called (System.out.println) 3");
     Log.info("init was called (log.info)");
+    Log.info("init was called (log.info) 2");
+    Log.info("init was called (log.info) 3") ;
     Config config = ConfigProvider.getConfig();
     {
       // parse and handle operator

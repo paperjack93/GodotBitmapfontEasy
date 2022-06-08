@@ -20,8 +20,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.Redisson;
 import org.redisson.api.LocalCachedMapOptions;
-// removepro
-//import org.redisson.api.RLocalCachedMapCache;
+import org.redisson.api.RLocalCachedMapCache;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.RedisConnectionException;
 import org.redisson.client.RedisTimeoutException;
@@ -41,8 +40,7 @@ public class CacheProviderImpl implements CacheProvider {
   private AtomicInteger clientVersion;
   private AtomicInteger prevClientVersion;
   private Map<String, CacheConfig> cacheConfigMap;
-// removepro
-//  private Map<String, RLocalCachedMapCache> cacheMap;
+  private Map<String, RLocalCachedMapCache> cacheMap;
 
   public CacheProviderImpl() {
     log.info("CacheProvider.new()");
@@ -61,13 +59,16 @@ public class CacheProviderImpl implements CacheProvider {
       clientInitLock.writeLock().lock();
       clientConfig = new Config();
 
-// removepro
-/*
+      String address = "redis://redis:6379"; // String.format("redis://%s:%d", config.getCacheHost(), config.getCachePort());
+
+      log.debug("connecting to redis on {} with key {}", 
+        address,
+        config.getCacheLicenseKey());
+
       clientConfig.setRegistrationKey(config.getCacheLicenseKey());
-*/      
       clientConfig
           .useSingleServer()
-          .setAddress(String.format("redis://%s:%d", config.getCacheHost(), config.getCachePort()));
+          .setAddress(address); // String.format("redis://%s:%d", config.getCacheHost(), config.getCachePort()));
 
       client = Redisson.create(clientConfig);
 
@@ -75,11 +76,7 @@ public class CacheProviderImpl implements CacheProvider {
       prevClientVersion = new AtomicInteger(0);
 
       cacheConfigMap = new ConcurrentHashMap<>();
-      
-// removepro
-/*      
       cacheMap = new ConcurrentHashMap<>();
-*/
     } finally {
       clientInitLock.writeLock().unlock();
     }
@@ -188,7 +185,7 @@ public class CacheProviderImpl implements CacheProvider {
       throw new ApplicationException(
           "CacheProvider.initCache(cacheConfig) => [cacheConfig] is null");
     }
-/* removepro
+
     RLocalCachedMapCache cache =
         initCache(
             cacheConfig.getKType(),
@@ -196,11 +193,10 @@ public class CacheProviderImpl implements CacheProvider {
             cacheConfig.getCacheName(),
             cacheConfig.getSize(),
             cacheConfig.getTtl());
-*/
+
     try {
       clientInitLock.writeLock().lock();
-// removepro            
-//      cacheMap.put(cacheConfig.getCacheName(), cache);
+      cacheMap.put(cacheConfig.getCacheName(), cache);
     } finally {
       clientInitLock.writeLock().unlock();
     }
@@ -216,8 +212,6 @@ public class CacheProviderImpl implements CacheProvider {
    * @param <V>
    * @return
    */
-// removepro
-/*
   private <K, V> RLocalCachedMapCache<K, V> initCache(
       Class<K> keyType, Class<V> valueType, String cacheName, int size, int ttl) {
     RedissonClient client = getClient();
@@ -231,7 +225,6 @@ public class CacheProviderImpl implements CacheProvider {
             .maxIdle(ttl, TimeUnit.MINUTES);
     return client.getLocalCachedMapCache(cacheName, options);
   }
-*/  
 
   /**
    * @param cacheName
@@ -259,13 +252,11 @@ public class CacheProviderImpl implements CacheProvider {
           value.getClass(), cacheConfig.getVType());
     }
 
-// removepro  
-/*    RLocalCachedMapCache cache = getCache(cacheName);
+    RLocalCachedMapCache cache = getCache(cacheName);
     executeSafe(
         () -> {
           cache.fastPut(key, value, cacheConfig.getTtl(), TimeUnit.MINUTES);
         });
-*/        
   }
 
   /**
@@ -284,28 +275,22 @@ public class CacheProviderImpl implements CacheProvider {
           key.getClass(), cacheConfig.getKType());
     }
 
-// removepro  
-/*
     RLocalCachedMapCache cache = getCache(cacheName);
 
     executeSafe(
         () -> {
           executeSafe(() -> cache.remove(key));
         });
-*/        
   }
 
   /** @param cacheName */
   @Override
   public void removeAll(String cacheName) {
-// removepro
-/*
     RLocalCachedMapCache cache = getCache(cacheName);
     executeSafe(
         () -> {
           executeSafe(() -> cache.clear());
         });
-*/
   }
 
   /**
@@ -332,8 +317,6 @@ public class CacheProviderImpl implements CacheProvider {
           valueType, cacheConfig.getVType());
     }
 
-// removepro  
-/*
     RLocalCachedMapCache cache = getCache(cacheName);
     Object value = querySafe(() -> cache.get(key));
 
@@ -348,8 +331,6 @@ public class CacheProviderImpl implements CacheProvider {
           "CacheProvider.get(cacheName, valueType, key) => [%s] is not of type [%s]",
           value.getClass(), valueType);
     }
-*/    
-    return null;
   }
 
   /**
@@ -384,8 +365,6 @@ public class CacheProviderImpl implements CacheProvider {
    * @param cacheName cache names
    * @return
    */
-// removepro  
-/*  
   private RLocalCachedMapCache getCache(String cacheName) {
     if (CommonUtils.isWhitespaceOrNull(cacheName)) {
       throw new ApplicationException(
@@ -403,7 +382,6 @@ public class CacheProviderImpl implements CacheProvider {
       this.cacheLock.readLock().unlock();
     }
   }
-*/  
 
   /**
    * wrapper command to execute the query, just to ensure that we had unify handler of error

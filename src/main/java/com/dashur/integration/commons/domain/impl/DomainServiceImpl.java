@@ -87,7 +87,7 @@ public class DomainServiceImpl implements DomainService {
 
   @Inject @RestClient LauncherClientService launcherClientService;
 
-  @Inject @RestClient FeedTransactionClientService feedTransactionClientService;
+//  @Inject @RestClient FeedTransactionClientService feedTransactionClientService;
 
   @Inject CacheService cacheService;
 
@@ -948,8 +948,9 @@ public class DomainServiceImpl implements DomainService {
   @Override
   public TransactionRoundModel findTransactionRoundByRoundExtRef(
       RequestContext ctx, String externalRef) {
-    RestResponseWrapperModel<List<TransactionRoundModel>> result;
+    RestResponseWrapperModel<List<TransactionRoundModel>> result = null;
     try {
+/*      
       result =
           feedTransactionClientService.getTransactionRoundByExternalRef(
               CommonUtils.authorizationBearer(ctx.getAccessToken()),
@@ -958,6 +959,7 @@ public class DomainServiceImpl implements DomainService {
               ctx.getUuid().toString(),
               ctx.getLanguage(),
               externalRef);
+*/              
     } catch (WebApplicationException e) {
       throw error(e);
     }
@@ -992,7 +994,8 @@ public class DomainServiceImpl implements DomainService {
   @Override
   public TransactionFeedModel findTransactionFeedById(RequestContext context, Long txId) {
     try {
-      RestResponseWrapperModel<TransactionFeedModel> result =
+      RestResponseWrapperModel<TransactionFeedModel> result = null; // =
+/*      
           feedTransactionClientService.getTransactionById(
               CommonUtils.authorizationBearer(context.getAccessToken()),
               context.getTimezone(),
@@ -1000,7 +1003,7 @@ public class DomainServiceImpl implements DomainService {
               context.getUuid().toString(),
               context.getLanguage(),
               txId);
-
+*/
       if (!result.hasData()) {
         throw new EntityNotExistException(404, "Empty data return.");
       }
@@ -1014,7 +1017,8 @@ public class DomainServiceImpl implements DomainService {
   @Override
   public TransactionFeedModel findTransactionFeedByExtRef(RequestContext context, String txExtRef) {
     try {
-      RestResponseWrapperModel<List<TransactionFeedModel>> results =
+      RestResponseWrapperModel<List<TransactionFeedModel>> results = null; // =
+/*      
           feedTransactionClientService.getTransactionByExternalRef(
               CommonUtils.authorizationBearer(context.getAccessToken()),
               context.getTimezone(),
@@ -1022,7 +1026,7 @@ public class DomainServiceImpl implements DomainService {
               context.getUuid().toString(),
               context.getLanguage(),
               txExtRef);
-
+*/
       if (results.getData().isEmpty()) {
         throw new EntityNotExistException(404, "Empty list return.");
       }
@@ -1041,7 +1045,8 @@ public class DomainServiceImpl implements DomainService {
   public TransactionFeedModel findTransactionFeedByExtRef(
       RequestContext context, String txExtRef, TxCategory category) {
     try {
-      RestResponseWrapperModel<List<TransactionFeedModel>> results =
+      RestResponseWrapperModel<List<TransactionFeedModel>> results = null; // =
+/*      
           feedTransactionClientService.getTransactionByExternalRef(
               CommonUtils.authorizationBearer(context.getAccessToken()),
               context.getTimezone(),
@@ -1049,7 +1054,7 @@ public class DomainServiceImpl implements DomainService {
               context.getUuid().toString(),
               context.getLanguage(),
               txExtRef);
-
+*/
       if (results.getData().isEmpty()) {
         throw new EntityNotExistException(404, "Empty list return.");
       }
@@ -1094,7 +1099,8 @@ public class DomainServiceImpl implements DomainService {
       Long roundId,
       Long dataTimeLimitInSeconds) {
     try {
-      RestResponseWrapperModel<TransactionRoundModel> roundRs =
+      RestResponseWrapperModel<TransactionRoundModel> roundRs = null;
+      /* =
           feedTransactionClientService.getTransactionRoundByRoundId(
               CommonUtils.authorizationBearer(context.getAccessToken()),
               context.getTimezone(),
@@ -1102,7 +1108,7 @@ public class DomainServiceImpl implements DomainService {
               context.getUuid().toString(),
               context.getLanguage(),
               roundId);
-
+    */
       if (!roundRs.hasData()) {
         throw new EntityNotExistException(404, "Empty data return.");
       }
@@ -1142,7 +1148,8 @@ public class DomainServiceImpl implements DomainService {
             roundRs.getData().getTransactionIds().stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(","));
-        RestResponseWrapperModel<List<TransactionFeedModel>> result =
+        RestResponseWrapperModel<List<TransactionFeedModel>> result = null; // =
+/*        
             feedTransactionClientService.getTransactionByTxIds(
                 CommonUtils.authorizationBearer(context.getAccessToken()),
                 context.getTimezone(),
@@ -1150,6 +1157,7 @@ public class DomainServiceImpl implements DomainService {
                 context.getUuid().toString(),
                 context.getLanguage(),
                 txIds);
+*/                
         if (!result.hasData()) {
           throw new EntityNotExistException(404, "Empty data return.");
         }
@@ -1171,7 +1179,8 @@ public class DomainServiceImpl implements DomainService {
       Integer pageSize,
       Integer page) {
     try {
-      RestResponseWrapperModel<List<TransactionRoundModel>> result =
+      RestResponseWrapperModel<List<TransactionRoundModel>> result = null; // =
+/*
           feedTransactionClientService.getTransactionRoundByAccountIdAndTime(
               CommonUtils.authorizationBearer(context.getAccessToken()),
               context.getTimezone(),
@@ -1184,7 +1193,7 @@ public class DomainServiceImpl implements DomainService {
               FORMAT.format(endTime),
               pageSize,
               page);
-
+*/
       if (!result.hasData()) {
         throw new EntityNotExistException(404, "Empty data return.");
       }

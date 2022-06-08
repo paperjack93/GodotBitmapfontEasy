@@ -19,6 +19,15 @@
     <jackson.version.core>2.13.0</jackson.version.core>
     <jackson-annotations-version>2.13.0</jackson-annotations-version>
   </properties>
+  <repositories>
+    <repository>
+        <id>redisson-repo</id>
+        <url>https://redisson.pro/repo/</url>
+        <snapshots>
+             <enabled>false</enabled>
+        </snapshots>
+    </repository>
+  </repositories>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -64,10 +73,17 @@
       <version>1.18.22</version>
       <scope>provided</scope>
     </dependency>
+<!--    
     <dependency>
         <groupId>org.redisson</groupId>
         <artifactId>redisson</artifactId>
-        <version>3.6.3</version>
+        <version>3.17.3</version>
+    </dependency>
+-->    
+    <dependency>
+        <groupId>pro.redisson</groupId>
+        <artifactId>redisson</artifactId>
+        <version>3.17.3</version>
     </dependency>
     <dependency>
         <groupId>redis.clients</groupId>
