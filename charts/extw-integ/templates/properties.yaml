@@ -7,9 +7,9 @@ metadata:
   labels:
   {{- include "extw-integ.labels" . | nindent 4 }}
 data:
-  application-dev.properties: |-
-    {{- .Files.Get "application-dev.properties" | nindent 4 }}
-  application-stg.properties: |-
-    {{- .Files.Get "application-stg.properties" | nindent 4 }}
-  application-prd.properties: |-
-    {{- .Files.Get "application-prd.properties" | nindent 4 }}
+  application.properties: |-
+    {{- .Files.Get "application.properties" | nindent 4 }}
+#  application-stg.properties: |-
+#    {{- .Files.Get "application-stg.properties" | nindent 4 }}
+#  application-prd.properties: |-
+#    {{- .Files.Get "application-prd.properties" | nindent 4 }}
