@@ -294,12 +294,14 @@ public class RelaxGamingController {
 
     Boolean isDemo = mode == "fun";
 
-    Map<String, Object> metaData = new HashMap<String, Object>();
-    metaData.put("clientId", clientId);
-    metaData.put("gameRef", getGameRef(gameId));
+//    Map<String, Object> metaData = new HashMap<String, Object>();
+//    metaData.put("clientId", clientId);
+//    metaData.put("gameRef", getGameRef(gameId));
     RequestContext ctx = RequestContext.instance()
-                                       .withLanguage(language)
-                                       .withMetaData(metaData);
+                                       .withLanguage(language);
+//                                       .withMetaData(metaData);
+    ctx.getMetaData().put("clientId", clientId);
+    ctx.getMetaData().put("gameRef", getGameRef(gameId));
     if (isDemo) {
       ctx = ctx.withCurrency(demoCurrency);
     }

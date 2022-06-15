@@ -87,7 +87,7 @@ public class DomainServiceImpl implements DomainService {
 
   @Inject @RestClient LauncherClientService launcherClientService;
 
-//  @Inject @RestClient FeedTransactionClientService feedTransactionClientService;
+  @Inject @RestClient FeedTransactionClientService feedTransactionClientService;
 
   @Inject CacheService cacheService;
 
