@@ -76,18 +76,6 @@ volumes:
 
 affinity: {}
 
-livenessProbe:
-  path: /
-  port: extw
-  initialDelaySeconds: 5
-  periodSeconds: 30
-
-readinessProbe:
-  path: /
-  port: extw
-  initialDelaySeconds: 5
-  periodSeconds: 30
-
 configmaps:
   - path: /deployments/config/application.properties
     src: application.properties
