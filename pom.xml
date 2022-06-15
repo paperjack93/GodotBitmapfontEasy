@@ -18,6 +18,7 @@
     <moneta.version>1.0</moneta.version>
     <redisson.version>3.6.3</redisson.version>
     <jedis.version>3.3.0</jedis.version>
+    <lombok.version>1.18.22</lombok.version>   
     <commons.pool.version>2.10.0</commons.pool.version>
     <commons.net.version>3.8.0</commons.net.version>
     <jackson.version>2.12.4</jackson.version>
@@ -81,6 +82,12 @@
       <artifactId>jackson-dataformat-xml</artifactId>
       <version>${jackson.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
+    </dependency>    
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
