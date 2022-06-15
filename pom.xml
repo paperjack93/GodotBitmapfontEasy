@@ -57,11 +57,17 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-jackson</artifactId>
     </dependency>
+<!--    
     <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-core</artifactId>
         <version>4.3.1</version>
-    </dependency>    
+    </dependency>
+-->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-vertx</artifactId>
+    </dependency>
     <dependency>
         <groupId>org.javamoney</groupId>
         <artifactId>moneta</artifactId>
