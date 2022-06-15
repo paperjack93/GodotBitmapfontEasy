@@ -888,7 +888,7 @@ public class DomainServiceImpl implements DomainService {
       }
 
       if (!CommonUtils.isEmptyOrNull(callerIp)) {
-        Map<String, Object> meta = Maps.newHashMap();
+        Map<String, Object> meta = Maps.newHashMap(ctx.getMetaData());
         meta.put(Constant.LAUNCHER_META_DATA_KEY_GAME_ID, itemId);
         meta.put(Constant.LAUNCHER_META_DATA_KEY_IP_ADDRESS, callerIp);
         rq.getCtx().put(Constant.LAUNCHER_META_DATA_KEY_META_DATA, meta);
