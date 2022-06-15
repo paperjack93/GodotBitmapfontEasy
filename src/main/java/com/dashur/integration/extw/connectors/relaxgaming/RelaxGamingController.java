@@ -305,6 +305,7 @@ public class RelaxGamingController {
     if (isDemo) {
       ctx = ctx.withCurrency(demoCurrency);
     }
+    log.debug("launcher request context: {}", ctx.getMetaData());
 
     String url =
         service.launchUrl(
