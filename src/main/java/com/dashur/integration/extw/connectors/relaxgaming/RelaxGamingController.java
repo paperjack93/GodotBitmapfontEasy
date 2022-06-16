@@ -292,19 +292,16 @@ public class RelaxGamingController {
       throw new ValidationException("channel [%s] is invalid for partnerId [%s]", channel, partnerId);
     }
 
-    Boolean isDemo = mode == "fun";
+    Boolean isDemo = mode.equals("fun");
 
-//    Map<String, Object> metaData = new HashMap<String, Object>();
-//    metaData.put("clientId", clientId);
-//    metaData.put("gameRef", getGameRef(gameId));
     RequestContext ctx = RequestContext.instance()
                                        .withLanguage(language);
-//                                       .withMetaData(metaData);
-    ctx.getMetaData().put("clientId", clientId);
-    ctx.getMetaData().put("gameRef", getGameRef(gameId));
     if (isDemo) {
+      log.info("launching in demo mode");
       ctx = ctx.withCurrency(demoCurrency);
     }
+    ctx.getMetaData().put("clientId", clientId);
+    ctx.getMetaData().put("gameRef", getGameRef(gameId));
     log.debug("launcher request context: {}", ctx.getMetaData());
 
     String url =
