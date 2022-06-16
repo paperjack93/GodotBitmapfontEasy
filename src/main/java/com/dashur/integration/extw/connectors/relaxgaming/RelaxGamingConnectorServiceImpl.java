@@ -366,7 +366,11 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
           new DasMoney(
             operatorRes.getCurrency(),
             CommonUtils.fromCents(operatorRes.getBalance().longValue())));
-        response.setUsername(operatorRes.getUserName());
+        if (CommonUtils.isEmptyOrNull(operatorRes.getUserName())) {
+          response.setUsername("ref-" + operatorRes.getCustomerId());
+        } else {
+          response.setUsername(operatorRes.getUserName());
+        }
         response.setCurrency(operatorRes.getCurrency());
         response.setTimestamp(new Date());
         response.setReqId(authRequest.getReqId());

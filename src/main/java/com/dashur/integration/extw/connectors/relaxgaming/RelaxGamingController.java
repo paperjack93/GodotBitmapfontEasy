@@ -297,7 +297,7 @@ public class RelaxGamingController {
     RequestContext ctx = RequestContext.instance()
                                        .withLanguage(language);
     if (isDemo) {
-      log.info("launching in demo mode");
+      log.info("launching in demo mode with currency {}", demoCurrency);
       ctx = ctx.withCurrency(demoCurrency);
     }
     ctx.getMetaData().put("clientId", clientId);
