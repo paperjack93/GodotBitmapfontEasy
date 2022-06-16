@@ -237,7 +237,8 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
         throw new ValidationException("Unable to resolve gameRef");
       } 
       if (clientId.isEmpty()) {
-        throw new ValidationException("Unable to resolve clientId");
+        // throw new ValidationException("Unable to resolve clientId");
+        log.warn("unable to resolve clientId");
       } 
 
       if (request instanceof DasAuthRequest) {
