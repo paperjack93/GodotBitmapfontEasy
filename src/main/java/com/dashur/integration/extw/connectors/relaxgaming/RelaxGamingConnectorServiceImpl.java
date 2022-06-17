@@ -360,7 +360,7 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
         VerifyTokenResponse operatorRes = (VerifyTokenResponse) input;
 
         DasAuthResponse response = new DasAuthResponse();
-        response.setToken(authRequest.getToken());
+        response.setToken(input.getSessionId().toString());
         response.setAccountExtRef(operatorRes.getPlayerId().toString());
         response.setBalance(
           new DasMoney(
@@ -381,7 +381,7 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
         BalanceResponse operatorRes = (BalanceResponse) input;
 
         DasBalanceResponse response = new DasBalanceResponse();
-        response.setToken(balRequest.getToken());
+        response.setToken(input.getSessionId().toString());
         response.setBalance(CommonUtils.fromCents(operatorRes.getBalance().longValue()));
         response.setTimestamp(new Date());
         response.setReqId(balRequest.getReqId());
@@ -391,7 +391,7 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
         TransactionResponse operatorRes = (TransactionResponse) input;
 
         DasTransactionResponse response = new DasTransactionResponse();
-        response.setToken(txRequest.getToken());
+        response.setToken(input.getSessionId().toString());
         response.setBalance(CommonUtils.fromCents(operatorRes.getBalance().longValue()));
         response.setTimestamp(new Date());
         response.setReqId(txRequest.getReqId());
@@ -401,7 +401,7 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
         TransactionResponse operatorRes = (TransactionResponse) input;
 
         DasEndRoundResponse response = new DasEndRoundResponse();
-        response.setToken(endRequest.getToken());
+        response.setToken(input.getSessionId().toString());
         response.setBalance(CommonUtils.fromCents(operatorRes.getBalance().longValue()));
         response.setTimestamp(new Date());
         response.setReqId(endRequest.getReqId());
