@@ -135,6 +135,11 @@ public class RelaxGamingController {
             callerIp);
       }
 
+      if (CommonUtils.isEmptyOrNull(clientId)) {
+        clientId = "mobile_app";
+        log.info("setting client if to {}", clientId);
+      }
+
       return getLauncherInternal(
         gameId, 
         token, 
