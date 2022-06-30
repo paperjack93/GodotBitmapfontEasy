@@ -231,10 +231,51 @@ public class RelaxGamingController {
 
 
   @POST
-  @Path("/replay/get")
+  @Path("/playcheck")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response getPlaycheck(
+    @HeaderParam(AUTHORIZATION) String auth, final GetReplayRequest request) {
+    try {
+      if (!authenticate(auth, request.getCredentials().getPartnerId())) {
+        return Response.status(401).build();
+      }
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "/v1/extw/exp/relaxgaming/game-state - [{}] [{}]",
+            request.getCredentials().getPartnerId(),
+            request.getRoundId());
+      }
+
+      String partnerId = String.valueOf(request.getCredentials().getPartnerId());
+      RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, true);
+      
+      String url =
+          service.playcheckUrl(
+              RequestContext.instance(),
+              setting.getLauncherAppClientId(),
+              setting.getLauncherAppClientCredential(),
+              setting.getLauncherAppApiId(),
+              setting.getLauncherAppApiCredential(),
+              request.getRoundId());
+
+      GetReplayResponse resp = new GetReplayResponse();
+      resp.setReplayUrl(url);
+      return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
+
+    } catch (Exception e) {
+      log.error("Unable to get playcheck [{}] - [{}]", 
+        request.getCredentials().getPartnerId(), request.getRoundId(), e);
+        return Response.status(500).build();
+    }
+  }
+
+
+  @POST
+  @Path("/replay/get")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response getReplay(
     @HeaderParam(AUTHORIZATION) String auth, final GetReplayRequest request) {
     try {
       if (!authenticate(auth, request.getCredentials().getPartnerId())) {
