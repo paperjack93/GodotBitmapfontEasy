@@ -242,7 +242,7 @@ public class RelaxGamingController {
       }
       if (log.isDebugEnabled()) {
         log.debug(
-            "/v1/extw/exp/relaxgaming/game-state - [{}] [{}]",
+            "/v1/extw/exp/relaxgaming/playcheck - [{}] [{}]",
             request.getCredentials().getPartnerId(),
             request.getRoundId());
       }
@@ -257,7 +257,7 @@ public class RelaxGamingController {
               setting.getLauncherAppClientCredential(),
               setting.getLauncherAppApiId(),
               setting.getLauncherAppApiCredential(),
-              request.getRoundId());
+              "1040-" + request.getRoundId());
 
       GetReplayResponse resp = new GetReplayResponse();
       resp.setReplayUrl(url);
@@ -297,7 +297,7 @@ public class RelaxGamingController {
         setting.getLauncherAppClientCredential(),
         setting.getLauncherAppApiId(),
         setting.getLauncherAppApiCredential(),
-        request.getRoundId());
+        "1040-" + request.getRoundId());
 
 
       PlaycheckExtRequest playcheckReq = new PlaycheckExtRequest();
