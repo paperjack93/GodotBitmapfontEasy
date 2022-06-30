@@ -5,6 +5,7 @@ import com.dashur.integration.commons.domain.CommonService;
 import com.dashur.integration.commons.domain.DomainService;
 import com.dashur.integration.commons.exception.EntityNotExistException;
 import com.dashur.integration.commons.rest.model.TransactionRoundModel;
+import com.dashur.integration.commons.rest.model.TransactionFeedModel;
 import java.util.Date;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -88,6 +89,25 @@ public class ServiceImpl implements Service {
 
     return domainService.extWalletPlaycheck(ctx, round.getId());
   }
+
+  public TransactionFeedModel transactionFeed (
+      RequestContext ctx,
+      String clientId,
+      String clientCredential,
+      String companyAppId,
+      String companyAppCredential,
+      String roundId) {
+    ctx =
+        ctx.withAccessToken(
+            commonService.companyAppAccessToken(
+                ctx, clientId, clientCredential, companyAppId, companyAppCredential));
+
+    TransactionRoundModel round = domainService.findTransactionRoundByRoundExtRef(ctx, roundId);
+    TransactionFeedModel feed = domainService.findTransactionFeedById(ctx, round.getId());
+
+    return feed;
+  }
+
 
   @Override
   public Long createOrUpdateCampaign(

@@ -1,6 +1,7 @@
 package com.dashur.integration.extw;
 
 import com.dashur.integration.commons.RequestContext;
+import com.dashur.integration.commons.rest.model.TransactionFeedModel;
 import java.util.Date;
 
 public interface Service {
@@ -65,6 +66,23 @@ public interface Service {
    * @return
    */
   String playcheckUrl(
+      RequestContext ctx,
+      String clientId,
+      String clientCredential,
+      String companyAppId,
+      String companyAppCredential,
+      String roundId);
+
+  /**
+   * @param ctx
+   * @param clientId
+   * @param clientCredential
+   * @param companyAppId
+   * @param companyAppCredential
+   * @param roundId
+   * @return
+   */
+  TransactionFeedModel transactionFeed (
       RequestContext ctx,
       String clientId,
       String clientCredential,

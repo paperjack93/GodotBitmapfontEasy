@@ -5,6 +5,8 @@ import com.dashur.integration.commons.exception.ApplicationException;
 import com.dashur.integration.commons.exception.ValidationException;
 import com.dashur.integration.commons.exception.AuthException;
 import com.dashur.integration.commons.utils.CommonUtils;
+import com.dashur.integration.commons.rest.model.TransactionRoundModel;
+import com.dashur.integration.commons.rest.model.TransactionFeedModel;
 import com.dashur.integration.extw.Constant;
 import com.dashur.integration.extw.ExtwIntegConfiguration;
 import com.dashur.integration.extw.Service;
@@ -18,7 +20,10 @@ import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetReplay
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateRequest;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateResponse;
 import com.dashur.integration.extw.rgs.RgsService;
+import com.dashur.integration.extw.rgs.RgsServiceProvider;
 import com.dashur.integration.extw.rgs.data.GameHash;
+import com.dashur.integration.extw.rgs.data.PlaycheckExtRequest;
+import com.dashur.integration.extw.rgs.data.PlaycheckExtResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -182,7 +187,7 @@ public class RelaxGamingController {
     String partnerId = String.valueOf(request.getCredentials().getPartnerId());
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
 
-    List<GameHash> rgsResp = rgsService.getProvider(relaxConfig.getRgsProvider()).gameHashes();
+    List<GameHash> rgsResp = getRgs().gameHashes(); // rgsService.getProvider(relaxConfig.getRgsProvider()).gameHashes();
     List<GameInfo> games = new ArrayList<GameInfo>();
     GetGamesResponse resp = new GetGamesResponse();
     for ( GameHash hash : rgsResp) {
@@ -244,18 +249,25 @@ public class RelaxGamingController {
 
       String partnerId = String.valueOf(request.getCredentials().getPartnerId());
       RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, true);
+      
+      TransactionFeedModel feed = service.transactionFeed(
+        RequestContext.instance(),
+        setting.getLauncherAppClientId(),
+        setting.getLauncherAppClientCredential(),
+        setting.getLauncherAppApiId(),
+        setting.getLauncherAppApiCredential(),
+        request.getRoundId());
 
-      String url =
-          service.playcheckUrl(
-              RequestContext.instance(),
-              setting.getLauncherAppClientId(),
-              setting.getLauncherAppClientCredential(),
-              setting.getLauncherAppApiId(),
-              setting.getLauncherAppApiCredential(),
-              request.getRoundId());
+
+      PlaycheckExtRequest playcheckReq = new PlaycheckExtRequest();
+      List<TransactionFeedModel> feeds = new ArrayList<TransactionFeedModel>();
+      feeds.add(feed);
+      playcheckReq.setFeeds(feeds);
+
+      PlaycheckExtResponse playcheckResp = getRgs().playcheckExt(playcheckReq);
 
       GetReplayResponse resp = new GetReplayResponse();
-      resp.setReplayUrl(url);
+      resp.setReplayUrl(playcheckResp.getUrl());
       return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
 
     } catch (Exception e) {
@@ -405,5 +417,10 @@ public class RelaxGamingController {
       relaxConfig.getPlatform(), 
       relaxConfig.getGamestudio(),
       gameId);
+  }
+
+
+  private RgsServiceProvider getRgs() {
+    return rgsService.getProvider(relaxConfig.getRgsProvider());
   }
 }
