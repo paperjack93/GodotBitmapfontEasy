@@ -6,7 +6,7 @@ import javax.ws.rs.core.Response;
 
 public interface RgsServiceProvider {
 	
-	List<GameHash> gameHashes();
+	List<GameHash> gameHashes(String currencies);
 
 	PlaycheckExtResponse playcheckExt(final PlaycheckExtRequest request);
 }

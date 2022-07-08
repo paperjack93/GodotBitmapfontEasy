@@ -79,23 +79,6 @@ public interface Service {
    * @param clientCredential
    * @param companyAppId
    * @param companyAppCredential
-   * @param roundId
-   * @return
-   */
-  TransactionFeedModel transactionFeed (
-      RequestContext ctx,
-      String clientId,
-      String clientCredential,
-      String companyAppId,
-      String companyAppCredential,
-      String roundId);
-
-  /**
-   * @param ctx
-   * @param clientId
-   * @param clientCredential
-   * @param companyAppId
-   * @param companyAppCredential
    * @param vendorExtRef
    * @param itemId
    * @param noOfFreeRound

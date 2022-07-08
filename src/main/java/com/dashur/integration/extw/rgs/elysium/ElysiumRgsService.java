@@ -10,6 +10,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
@@ -21,7 +22,8 @@ public interface ElysiumRgsService extends RgsServiceProvider {
   @Path("/gamehashes")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  List<GameHash> gameHashes();
+  List<GameHash> gameHashes(
+    @QueryParam("currencies") String currencies);
 
   @POST
   @Path("/playcheckext")

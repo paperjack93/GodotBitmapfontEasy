@@ -1,5 +1,7 @@
 package com.dashur.integration.extw.rgs.data;
 
+import java.util.Map;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -30,5 +32,12 @@ public class GameHash {
 
   @JsonProperty("sha1_digest")
   private String sha1Digest;
+
+  @JsonProperty("category")
+  private String category;
+
+  @JsonProperty("stakes")
+  private Map<String, List<Float>> stakes;
+
   
 }

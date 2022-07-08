@@ -22,6 +22,6 @@ import lombok.ToString;
 public class CancelFreeRoundsResponse {
 
   @JsonProperty("freespinsid")
-  private String freeSpinsId;
+  private String freespinsId;
 
 }

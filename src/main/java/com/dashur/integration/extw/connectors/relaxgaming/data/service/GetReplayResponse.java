@@ -1,6 +1,7 @@
 package com.dashur.integration.extw.connectors.relaxgaming.data.service;
 
 import java.util.List;
+import java.time.ZonedDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -30,10 +31,10 @@ public class GetReplayResponse {
   private String imageFormat;   // "jpeg" or "png"
 
   @JsonProperty("roundstart")
-  private String roundStart;
+  private ZonedDateTime roundStart;
 
   @JsonProperty("roundend")
-  private String roundEnd;
+  private ZonedDateTime roundEnd;
 
   @JsonProperty("betamount")
   private Long betAmount;       // In cents

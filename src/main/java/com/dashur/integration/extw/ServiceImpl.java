@@ -90,25 +90,6 @@ public class ServiceImpl implements Service {
     return domainService.extWalletPlaycheck(ctx, round.getId());
   }
 
-  public TransactionFeedModel transactionFeed (
-      RequestContext ctx,
-      String clientId,
-      String clientCredential,
-      String companyAppId,
-      String companyAppCredential,
-      String roundId) {
-    ctx =
-        ctx.withAccessToken(
-            commonService.companyAppAccessToken(
-                ctx, clientId, clientCredential, companyAppId, companyAppCredential));
-
-    TransactionRoundModel round = domainService.findTransactionRoundByRoundExtRef(ctx, roundId);
-    TransactionFeedModel feed = domainService.findTransactionFeedById(ctx, round.getId());
-
-    return feed;
-  }
-
-
   @Override
   public Long createOrUpdateCampaign(
       RequestContext ctx,

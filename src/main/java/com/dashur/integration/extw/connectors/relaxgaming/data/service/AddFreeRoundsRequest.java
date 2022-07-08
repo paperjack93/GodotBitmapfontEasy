@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import java.time.ZonedDateTime;
+
 
 @Data
 @ToString
@@ -35,10 +37,11 @@ public class AddFreeRoundsRequest extends ServiceRequest {
   private Integer amount;     // num free rounds. valid range 1 - 5000
 
   @JsonProperty("freespinvalue")
-  private Long freeSpinValue; // vale of single round in (default EUR) cents
+  private Long freespinValue; // vale of single round in (default EUR) cents
 
   @JsonProperty("expires")
-  private String expires;     // ISO 8601. default 7 days
+//  private String expires;     // ISO 8601. default 7 days
+  private ZonedDateTime expires;
 
   // optional
 

@@ -35,7 +35,7 @@ public class FreeRound {
   private Integer amount; // amount of rounds. valid range 1-5000
 
   @JsonProperty("freespinsid")
-  private String freeSpinsId;
+  private String freespinsId;
 
   @JsonProperty("createtime")
   private String createTime;

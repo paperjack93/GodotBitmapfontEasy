@@ -4,9 +4,15 @@ import com.dashur.integration.commons.RequestContext;
 import com.dashur.integration.commons.exception.ApplicationException;
 import com.dashur.integration.commons.exception.ValidationException;
 import com.dashur.integration.commons.exception.AuthException;
+import com.dashur.integration.commons.exception.EntityNotExistException;
 import com.dashur.integration.commons.utils.CommonUtils;
 import com.dashur.integration.commons.rest.model.TransactionRoundModel;
 import com.dashur.integration.commons.rest.model.TransactionFeedModel;
+import com.dashur.integration.commons.rest.model.CampaignCreateModel;
+import com.dashur.integration.commons.rest.model.CampaignModel;
+import com.dashur.integration.commons.rest.model.SimpleAccountModel;
+import com.dashur.integration.commons.domain.DomainService;
+import com.dashur.integration.commons.domain.CommonService;
 import com.dashur.integration.extw.Constant;
 import com.dashur.integration.extw.ExtwIntegConfiguration;
 import com.dashur.integration.extw.Service;
@@ -19,18 +25,29 @@ import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetReplay
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetReplayResponse;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateRequest;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateResponse;
+import com.dashur.integration.extw.connectors.relaxgaming.data.service.AddFreeRoundsRequest;
+import com.dashur.integration.extw.connectors.relaxgaming.data.service.AddFreeRoundsResponse;
+import com.dashur.integration.extw.connectors.relaxgaming.data.service.CancelFreeRoundsRequest;
+import com.dashur.integration.extw.connectors.relaxgaming.data.service.CancelFreeRoundsResponse;
 import com.dashur.integration.extw.rgs.RgsService;
 import com.dashur.integration.extw.rgs.RgsServiceProvider;
 import com.dashur.integration.extw.rgs.data.GameHash;
 import com.dashur.integration.extw.rgs.data.PlaycheckExtRequest;
 import com.dashur.integration.extw.rgs.data.PlaycheckExtResponse;
+import com.google.common.collect.Lists;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Calendar;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Date;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -52,12 +69,17 @@ import org.jboss.resteasy.spi.HttpRequest;
 public class RelaxGamingController {
   static final String OPERATOR_CODE = Constant.OPERATOR_RELAXGAMING;
   static final String AUTHORIZATION = "Authorization";
+  static final String ROUND_PREFIX = "1040-";
 
   @Inject ExtwIntegConfiguration config;
 
   @Inject ConnectorServiceLocator connectorLocator;
 
   @Inject Service service;
+
+  @Inject DomainService domainService;
+
+  @Inject CommonService commonService;
 
   @Inject RgsService rgsService;
 
@@ -187,7 +209,7 @@ public class RelaxGamingController {
     String partnerId = String.valueOf(request.getCredentials().getPartnerId());
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
 
-    List<GameHash> rgsResp = getRgs().gameHashes(); // rgsService.getProvider(relaxConfig.getRgsProvider()).gameHashes();
+    List<GameHash> rgsResp = getRgs().gameHashes("EUR");
     List<GameInfo> games = new ArrayList<GameInfo>();
     GetGamesResponse resp = new GetGamesResponse();
     for ( GameHash hash : rgsResp) {
@@ -196,7 +218,12 @@ public class RelaxGamingController {
         game.setGameRef(getGameRef(hash.getItemId()));
         game.setName(hash.getName());
         game.setStudio(relaxConfig.getRgsProvider());
-
+        List<Integer> legalBetSizes = new ArrayList<Integer>();
+        for (Float stake : hash.getStakes().get("EUR")){
+          double bet = stake.doubleValue() * 100;
+          legalBetSizes.add((int)bet);
+        }
+        game.setLegalBetSizes(legalBetSizes);
         games.add(game);
       }
     }
@@ -216,16 +243,36 @@ public class RelaxGamingController {
     }
     if (log.isDebugEnabled()) {
       log.debug(
-          "/v1/extw/exp/relaxgaming/state/getstate - [{}] [{}] [{}]",
+          "/v1/extw/exp/relaxgaming/round/getstate - [{}] [{}] [{}]",
           request.getCredentials(),
           request.getRoundId(),
           request.getJurisdiction());
     }
 
-    String partnerId = String.valueOf(request.getCredentials().getPartnerId());
-    RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
-
     GetStateResponse resp = new GetStateResponse();
+
+    String partnerId = String.valueOf(request.getCredentials().getPartnerId());
+    RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, true);
+
+    RequestContext ctx = RequestContext.instance();
+    ctx = ctx.withAccessToken(
+          commonService.companyAppAccessToken(
+              ctx, 
+              setting.getLauncherAppClientId(), 
+              setting.getLauncherAppClientCredential(), 
+              setting.getLauncherAppApiId(), 
+              setting.getLauncherAppApiCredential()));
+
+    TransactionRoundModel round = domainService.findTransactionRoundByRoundExtRef(ctx, 
+      getPrefixedRoundId(request.getRoundId()));
+
+
+    if (!round.getMetaData().containsKey("item_id")) {
+      return Response.serverError().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
+    }
+    resp.setClosedTime(round.getCloseTime().toString());
+    resp.setGameRef(getGameRef(round.getMetaData().get("item_id").toString()));
+    resp.setTotalWinAmount(round.getSumOfPayout().longValue());
     return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
   }
 
@@ -257,7 +304,7 @@ public class RelaxGamingController {
               setting.getLauncherAppClientCredential(),
               setting.getLauncherAppApiId(),
               setting.getLauncherAppApiCredential(),
-              "1040-" + request.getRoundId());
+              getPrefixedRoundId(request.getRoundId()));
 
       GetReplayResponse resp = new GetReplayResponse();
       resp.setReplayUrl(url);
@@ -283,23 +330,27 @@ public class RelaxGamingController {
       }
       if (log.isDebugEnabled()) {
         log.debug(
-            "/v1/extw/exp/relaxgaming/game-state - [{}] [{}]",
+            "/v1/extw/exp/relaxgaming/replay/get - [{}] [{}]",
             request.getCredentials().getPartnerId(),
             request.getRoundId());
       }
 
       String partnerId = String.valueOf(request.getCredentials().getPartnerId());
       RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, true);
+
+      RequestContext ctx = RequestContext.instance();
+      ctx = ctx.withAccessToken(
+            commonService.companyAppAccessToken(
+                ctx, 
+                setting.getLauncherAppClientId(), 
+                setting.getLauncherAppClientCredential(), 
+                setting.getLauncherAppApiId(), 
+                setting.getLauncherAppApiCredential()));
+
+      TransactionRoundModel round = domainService.findTransactionRoundByRoundExtRef(ctx, 
+        getPrefixedRoundId(request.getRoundId()));
+      TransactionFeedModel feed = domainService.findTransactionFeedById(ctx, round.getId());
       
-      TransactionFeedModel feed = service.transactionFeed(
-        RequestContext.instance(),
-        setting.getLauncherAppClientId(),
-        setting.getLauncherAppClientCredential(),
-        setting.getLauncherAppApiId(),
-        setting.getLauncherAppApiCredential(),
-        "1040-" + request.getRoundId());
-
-
       PlaycheckExtRequest playcheckReq = new PlaycheckExtRequest();
       List<TransactionFeedModel> feeds = new ArrayList<TransactionFeedModel>();
       feeds.add(feed);
@@ -307,16 +358,216 @@ public class RelaxGamingController {
 
       PlaycheckExtResponse playcheckResp = getRgs().playcheckExt(playcheckReq);
 
+      Timestamp startTs = new Timestamp(round.getStartTime().getTime());
+      Timestamp closeTs = new Timestamp(round.getCloseTime().getTime());
       GetReplayResponse resp = new GetReplayResponse();
       resp.setReplayUrl(playcheckResp.getUrl());
+      resp.setRoundStart(startTs.toLocalDateTime().atZone(ZoneOffset.UTC));
+      resp.setRoundEnd(closeTs.toLocalDateTime().atZone(ZoneOffset.UTC));
+      resp.setBetAmount(round.getSumOfWager().longValue());
+      resp.setWinAmount(round.getSumOfPayout().longValue());
+      resp.setCurrency(round.getCurrencyUnit());
       return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
 
     } catch (Exception e) {
-      log.error("Unable to get playcheck [{}] - [{}]", 
+      log.error("Unable to get replay [{}] - [{}]", 
         request.getCredentials().getPartnerId(), request.getRoundId(), e);
         return Response.status(500).build();
     }
   }
+
+
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("/freespins/add")
+  public Response addFreespins(
+      @HeaderParam(AUTHORIZATION) String auth, final AddFreeRoundsRequest request) {
+    RequestContext ctx = RequestContext.instance();
+    Long itemId = 0L;
+    Long vendorId = 0L;
+    String campaignExtRef = null;
+    String partnerId = null;
+
+    try {
+      if (!authenticate(auth, request.getCredentials().getPartnerId())) {
+        return Response.status(401).build();
+      }
+      partnerId = String.valueOf(request.getCredentials().getPartnerId());
+      RelaxGamingConfiguration.CompanySetting setting =
+          getCompanySettings(partnerId, true);
+
+      itemId = Long.parseLong(getItemId(request.getGameRef()));
+      campaignExtRef = String.format("%s-%s", OPERATOR_CODE, request.getPromoCode());
+
+      ctx =
+          ctx.withAccessToken(
+              commonService.companyAppAccessToken(
+                  ctx,
+                  setting.getLauncherAppClientId(),
+                  setting.getLauncherAppClientCredential(),
+                  setting.getLauncherAppApiId(),
+                  setting.getLauncherAppApiCredential()));
+      CampaignModel campaign = null;
+      try {
+        campaign = domainService.searchCampaign(ctx, campaignExtRef);
+      } catch (EntityNotExistException e) {
+        // don't do anything.
+      }
+
+      if (Objects.isNull(campaign)) {
+        Calendar now = Calendar.getInstance();
+        now.add(Calendar.MINUTE, 1);
+
+        Date expires = new Date(Timestamp.valueOf(request.getExpires().toLocalDateTime()).getTime());
+
+        CampaignCreateModel create = new CampaignCreateModel();
+        create.setEndTime(expires);
+        create.setGameId(itemId);
+        create.setName(campaignExtRef);
+        create.setNumOfGames(request.getAmount());
+        create.setExtRef(campaignExtRef);
+        create.setAccountId(setting.getCompanyId());
+        create.setStatus(CampaignCreateModel.Status.ACTIVE);
+        create.setType(CampaignCreateModel.Type.FREE_GAMES);
+        create.setBetLevel(Integer.valueOf(request.getFreespinValue().intValue()));
+        create.setStartTime(now.getTime());
+
+        campaign = domainService.createCampaign(ctx, create);
+      }
+
+      if (Objects.isNull(campaign)) {
+        throw new EntityNotExistException("Campaign not exist, despite created. Please check.");
+      }
+
+      if (Objects.isNull(campaign.getVendorRef())) {
+        AddFreeRoundsResponse resp = new AddFreeRoundsResponse();
+        resp.setFreespinsId(campaign.getId().toString());
+        return Response.serverError()
+            .type(MediaType.APPLICATION_JSON)
+            .encoding("utf-8")
+            .entity(resp)
+            .build();
+      }
+
+      SimpleAccountModel memberAccount = domainService.getAccountByExtRef(ctx, request.getPlayerId().toString());
+      if (Objects.isNull(memberAccount)) {
+        throw new EntityNotExistException("User with ext-ref [%d] is not exists", request.getPlayerId());
+      }
+
+      domainService.addCampaignMembers(
+          ctx, campaign.getId(), Lists.newArrayList(memberAccount.getId().toString()));
+
+      AddFreeRoundsResponse resp = new AddFreeRoundsResponse();
+      resp.setFreespinsId(campaign.getId().toString());
+
+      return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
+    } catch (Exception e) {
+      log.error("Unable to addFreespins [{}] - [{}] - [{}]", OPERATOR_CODE, partnerId, e);
+      return Response.serverError()
+          .type(MediaType.APPLICATION_JSON)
+          .encoding("utf-8")
+          .entity(e)
+          .build();
+    }
+  }
+
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("/freespins/get")
+  public Response getFreespins(
+      @HeaderParam(AUTHORIZATION) String auth, final CancelFreeRoundsRequest request) {
+    RequestContext ctx = RequestContext.instance();
+    String campaignExtRef = null;
+    String partnerId = null;
+
+    try {
+      if (!authenticate(auth, request.getCredentials().getPartnerId())) {
+        return Response.status(401).build();
+      }
+      throw new ApplicationException(
+        "getFreespins is not implemented. Please add.");
+    } catch (Exception e) {
+      log.error("Unable to getFreespins [{}] - [{}] - [{}]", OPERATOR_CODE, partnerId, e);
+      return Response.ok()
+          .type(MediaType.APPLICATION_JSON)
+          .encoding("utf-8")
+          .entity(e)
+          .build();
+    }
+  }
+
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("/freespins/cancel")
+  public Response cancelFreespins(
+      @HeaderParam(AUTHORIZATION) String auth, final CancelFreeRoundsRequest request) {
+    RequestContext ctx = RequestContext.instance();
+    String campaignExtRef = null;
+    String partnerId = null;
+
+    try {
+      if (!authenticate(auth, request.getCredentials().getPartnerId())) {
+        return Response.status(401).build();
+      }
+      partnerId = String.valueOf(request.getCredentials().getPartnerId());
+      RelaxGamingConfiguration.CompanySetting setting =
+          getCompanySettings(partnerId, true);
+      campaignExtRef = String.format("%s-%s", OPERATOR_CODE, request.getFreespinsId());
+
+      ctx =
+          ctx.withAccessToken(
+              commonService.companyAppAccessToken(
+                  ctx,
+                  setting.getLauncherAppClientId(),
+                  setting.getLauncherAppClientCredential(),
+                  setting.getLauncherAppApiId(),
+                  setting.getLauncherAppApiCredential()));
+      CampaignModel campaign = null;
+      try {
+        campaign = domainService.searchCampaign(ctx, campaignExtRef);
+      } catch (EntityNotExistException e) {
+        // don't do anything.
+      }
+
+      if (Objects.isNull(campaign)) {
+        throw new EntityNotExistException(
+            "Campaign not exist, cannot cancel freespins. Please check.");
+      }
+
+      if (Objects.isNull(campaign.getVendorRef())) {
+        CancelFreeRoundsResponse resp = new CancelFreeRoundsResponse();
+        resp.setFreespinsId(campaign.getId().toString());
+        return Response.serverError()
+            .type(MediaType.APPLICATION_JSON)
+            .encoding("utf-8")
+            .entity(resp)
+            .build();
+      }
+
+      SimpleAccountModel memberAccount = domainService.getAccountByExtRef(ctx, request.getPlayerId().toString());
+      if (Objects.isNull(memberAccount)) {
+        throw new EntityNotExistException("User with ext-ref [%s] is not exists", request.getPlayerId());
+      }
+
+      domainService.delCampaignMembers(
+          ctx, campaign.getId(), Lists.newArrayList(memberAccount.getId().toString()));
+
+      CancelFreeRoundsResponse resp = new CancelFreeRoundsResponse();
+      resp.setFreespinsId(campaign.getId().toString());
+
+      return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
+    } catch (Exception e) {
+      log.error("Unable to cancelFreespins [{}] - [{}] - [{}]", OPERATOR_CODE, partnerId, e);
+      return Response.ok()
+          .type(MediaType.APPLICATION_JSON)
+          .encoding("utf-8")
+          .entity(e)
+          .build();
+    }
+  }
+
+
+
 
   /**
    * Internal method for launching game
@@ -451,7 +702,7 @@ public class RelaxGamingController {
    * getGameRef
    * 
    * @param gameId
-   * @return
+   * @return RelaxGaming gameRef string
    */
   private String getGameRef(String gameId) {
     return String.format("rlx.%s.%s.%s", 
@@ -459,6 +710,32 @@ public class RelaxGamingController {
       relaxConfig.getGamestudio(),
       gameId);
   }
+
+  /**
+   * getItemId
+   * 
+   * @param gameRef
+   * @return Dashur itemId
+   */
+  private String getItemId(String gameRef) {
+    String[] parts = gameRef.split(".");
+    if (parts.length > 0) {
+      return parts[parts.length-1];
+    }
+    return "";
+  }
+
+
+  /**
+   * getPrefixedRoundId
+   * 
+   * @param roundId
+   * @return Dashur roundId
+   */
+  private String getPrefixedRoundId(String roundId) {
+    return ROUND_PREFIX + roundId;
+  }
+
 
 
   private RgsServiceProvider getRgs() {

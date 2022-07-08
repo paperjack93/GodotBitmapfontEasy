@@ -25,6 +25,6 @@ public class AddFeatureTriggersResponse {
   private Long txId;
 
   @JsonProperty("freespinsid")
-  private String freeSpinsId;
+  private String freespinsId;
 
 }
