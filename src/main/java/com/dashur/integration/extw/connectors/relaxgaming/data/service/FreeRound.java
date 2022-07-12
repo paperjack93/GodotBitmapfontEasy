@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import java.time.ZonedDateTime;
 
 @Data
 @ToString
@@ -20,10 +21,10 @@ import lombok.ToString;
 public class FreeRound {
 
   @JsonProperty("freespinvalue")
-  private Long freeSpinValue; // in cents
+  private Long freespinValue; // in cents
 
   @JsonProperty("expires")
-  private String expires;     // ISO 8601
+  private ZonedDateTime expires;     // ISO 8601
 
   @JsonProperty("promocode")
   private String promoCode;
@@ -38,7 +39,7 @@ public class FreeRound {
   private String freespinsId;
 
   @JsonProperty("createtime")
-  private String createTime;
+  private ZonedDateTime createTime;
 
   @JsonProperty("currency")
   private String currency;

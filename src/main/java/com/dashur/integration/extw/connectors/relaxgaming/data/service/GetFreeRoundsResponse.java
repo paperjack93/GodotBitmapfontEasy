@@ -22,6 +22,6 @@ import lombok.ToString;
 public class GetFreeRoundsResponse {
 
   @JsonProperty("freespins")
-  private List<FreeRound> freeSpins;
+  private List<FreeRound> freespins;
 
 }

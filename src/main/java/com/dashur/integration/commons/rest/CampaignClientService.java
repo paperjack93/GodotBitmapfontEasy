@@ -61,6 +61,17 @@ public interface CampaignClientService {
       @QueryParam("name") @DefaultValue("") final String name,
       @QueryParam("ext_ref") @DefaultValue("") final String extRef);
 
+  @GET
+  @Path("/v1/campaign/available")
+  @Produces(MediaType.APPLICATION_JSON)
+  RestResponseWrapperModel<List<CampaignModel>> available(
+      @HeaderParam(Constant.REST_HEADER_AUTHORIZATION) String auth,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_TZ) String tz,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_CURRENCY) String currency,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_TX_ID) String txId,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_TX_LANG) String lang,
+      @QueryParam("account_id") Long accountId);
+
   @POST
   @Path("/v1/campaign/{reference}/member")
   @Produces(MediaType.APPLICATION_JSON)

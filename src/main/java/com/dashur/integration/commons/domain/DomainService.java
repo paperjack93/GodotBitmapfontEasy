@@ -268,6 +268,13 @@ public interface DomainService {
 
   /**
    * @param context
+   * @param accountId
+   * @return
+   */
+  List<CampaignModel> availableCampaigns(RequestContext context, Long accountId);
+
+  /**
+   * @param context
    * @param campaignId
    * @param members
    * @return
