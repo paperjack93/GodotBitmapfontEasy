@@ -398,7 +398,7 @@ public class RelaxGamingController {
       RelaxGamingConfiguration.CompanySetting setting =
           getCompanySettings(partnerId, true);
 
-      itemId = Long.parseLong(getItemId(request.getGameRef()));
+      itemId = getItemId(request.getGameRef());
       campaignExtRef = String.format("%s-%s", OPERATOR_CODE, request.getPromoCode());
 
       ctx =
@@ -779,12 +779,12 @@ public class RelaxGamingController {
    * @param gameRef
    * @return Dashur itemId
    */
-  private String getItemId(String gameRef) {
-    String[] parts = gameRef.split(".");
+  private Long getItemId(String gameRef) {
+    String[] parts = gameRef.split("\\.");
     if (parts.length > 0) {
-      return parts[parts.length-1];
+      return Long.parseLong(parts[parts.length-1]);
     }
-    return "";
+    throw new ValidationException("gameRef is malformed [%s]", gameRef);
   }
 
   /**
