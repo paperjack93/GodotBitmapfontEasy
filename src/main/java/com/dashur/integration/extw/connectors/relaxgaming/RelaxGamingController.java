@@ -25,8 +25,11 @@ import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetReplay
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetReplayResponse;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateRequest;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetStateResponse;
+import com.dashur.integration.extw.connectors.relaxgaming.data.service.FreeRound;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.AddFreeRoundsRequest;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.AddFreeRoundsResponse;
+import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetFreeRoundsRequest;
+import com.dashur.integration.extw.connectors.relaxgaming.data.service.GetFreeRoundsResponse;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.CancelFreeRoundsRequest;
 import com.dashur.integration.extw.connectors.relaxgaming.data.service.CancelFreeRoundsResponse;
 import com.dashur.integration.extw.rgs.RgsService;
@@ -48,6 +51,7 @@ import java.util.Date;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
+import java.time.Instant;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -358,12 +362,10 @@ public class RelaxGamingController {
 
       PlaycheckExtResponse playcheckResp = getRgs().playcheckExt(playcheckReq);
 
-      Timestamp startTs = new Timestamp(round.getStartTime().getTime());
-      Timestamp closeTs = new Timestamp(round.getCloseTime().getTime());
       GetReplayResponse resp = new GetReplayResponse();
       resp.setReplayUrl(playcheckResp.getUrl());
-      resp.setRoundStart(startTs.toLocalDateTime().atZone(ZoneOffset.UTC));
-      resp.setRoundEnd(closeTs.toLocalDateTime().atZone(ZoneOffset.UTC));
+      resp.setRoundStart(toZonedDateTime(round.getStartTime()));
+      resp.setRoundEnd(toZonedDateTime(round.getCloseTime()));
       resp.setBetAmount(round.getSumOfWager().longValue());
       resp.setWinAmount(round.getSumOfPayout().longValue());
       resp.setCurrency(round.getCurrencyUnit());
@@ -418,10 +420,8 @@ public class RelaxGamingController {
         Calendar now = Calendar.getInstance();
         now.add(Calendar.MINUTE, 1);
 
-        Date expires = new Date(Timestamp.valueOf(request.getExpires().toLocalDateTime()).getTime());
-
         CampaignCreateModel create = new CampaignCreateModel();
-        create.setEndTime(expires);
+        create.setEndTime(toDate(request.getExpires()));
         create.setGameId(itemId);
         create.setName(campaignExtRef);
         create.setNumOfGames(request.getAmount());
@@ -475,7 +475,7 @@ public class RelaxGamingController {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/freespins/get")
   public Response getFreespins(
-      @HeaderParam(AUTHORIZATION) String auth, final CancelFreeRoundsRequest request) {
+      @HeaderParam(AUTHORIZATION) String auth, final GetFreeRoundsRequest request) {
     RequestContext ctx = RequestContext.instance();
     String campaignExtRef = null;
     String partnerId = null;
@@ -484,10 +484,47 @@ public class RelaxGamingController {
       if (!authenticate(auth, request.getCredentials().getPartnerId())) {
         return Response.status(401).build();
       }
-      throw new ApplicationException(
-        "getFreespins is not implemented. Please add.");
+      partnerId = String.valueOf(request.getCredentials().getPartnerId());
+      RelaxGamingConfiguration.CompanySetting setting =
+          getCompanySettings(partnerId, true);
+
+      ctx =
+          ctx.withAccessToken(
+              commonService.companyAppAccessToken(
+                  ctx,
+                  setting.getLauncherAppClientId(),
+                  setting.getLauncherAppClientCredential(),
+                  setting.getLauncherAppApiId(),
+                  setting.getLauncherAppApiCredential()));
+
+      List<CampaignModel> campaigns = null;
+      try {
+        campaigns = domainService.availableCampaigns(ctx, request.getPlayerId().longValue());
+      } catch (EntityNotExistException e) {
+        // don't do anything.
+      }
+
+      GetFreeRoundsResponse resp = new GetFreeRoundsResponse();
+      if (Objects.nonNull(campaigns)) {
+        List<FreeRound> freeRounds = new ArrayList<FreeRound>();
+        for (CampaignModel m : campaigns) {
+          FreeRound r = new FreeRound();
+          r.setFreespinValue(m.getBetLevel().longValue());
+          r.setExpires(toZonedDateTime(m.getEndTime()));
+          r.setPromoCode(m.getExtRef());
+          r.setGameRef(getGameRef(m.getGameId().toString()));
+          r.setAmount(m.getNumOfGames());
+          r.setFreespinsId(m.getId().toString());
+          r.setCreateTime(toZonedDateTime(m.getCreated()));
+          r.setCurrency(m.getCurrency());
+          freeRounds.add(r);
+        }
+        resp.setFreespins(freeRounds);
+      }
+      return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
+
     } catch (Exception e) {
-      log.error("Unable to getFreespins [{}] - [{}] - [{}]", OPERATOR_CODE, partnerId, e);
+      log.error("Unable to getFreespins [{}] - [{}  ] - [{}]", OPERATOR_CODE, partnerId, e);
       return Response.ok()
           .type(MediaType.APPLICATION_JSON)
           .encoding("utf-8")
@@ -699,6 +736,26 @@ public class RelaxGamingController {
   }
 
   /**
+   * toZonedDateTime
+   * 
+   * @param Date
+   * @return ZonedDateTime in UTC
+   */
+  private ZonedDateTime toZonedDateTime(Date date) {
+    return ZonedDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC);
+  }
+
+  /**
+   * toDate
+   * 
+   * @param zonedDateTime
+   * @return Date
+   */
+  private Date toDate(ZonedDateTime zonedDateTime) {
+    return Date.from(zonedDateTime.toInstant());
+  }
+
+  /**
    * getGameRef
    * 
    * @param gameId
@@ -725,7 +782,6 @@ public class RelaxGamingController {
     return "";
   }
 
-
   /**
    * getPrefixedRoundId
    * 
@@ -736,9 +792,13 @@ public class RelaxGamingController {
     return ROUND_PREFIX + roundId;
   }
 
-
-
+  /**
+   * getRgs
+   * 
+   * @return rgs service provider
+   */
   private RgsServiceProvider getRgs() {
     return rgsService.getProvider(relaxConfig.getRgsProvider());
   }
+
 }

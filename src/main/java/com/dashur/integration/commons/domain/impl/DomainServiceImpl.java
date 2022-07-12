@@ -545,6 +545,29 @@ public class DomainServiceImpl implements DomainService {
   }
 
   @Override
+  public List<CampaignModel> availableCampaigns(@NonNull RequestContext ctx, @NonNull Long accountId) {
+    RestResponseWrapperModel<List<CampaignModel>> result;
+    try {
+      result =
+          campaignClientService.available(
+              CommonUtils.authorizationBearer(ctx.getAccessToken()),
+              ctx.getTimezone(),
+              ctx.getCurrency(),
+              ctx.getUuid().toString(),
+              ctx.getLanguage(),
+              accountId);
+    } catch (WebApplicationException e) {
+      throw error(e);
+    }
+
+    if (result.hasError()) {
+      throw new ApplicationException("Rest application has error");
+    }
+
+    return result.getData();
+  }  
+
+  @Override
   public List<CampaignMemberModel> addCampaignMembers(
       @NonNull RequestContext ctx, @NonNull Long campaignId, @NonNull List<String> members) {
     RestResponseWrapperModel<List<CampaignMemberModel>> result;
