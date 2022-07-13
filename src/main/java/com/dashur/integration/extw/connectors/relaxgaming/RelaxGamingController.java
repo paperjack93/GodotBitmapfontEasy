@@ -412,7 +412,7 @@ public class RelaxGamingController {
       currency = request.getCurrency();
       if (Strings.isNullOrEmpty(currency)) {
         currency = DEFAULT_CURRENCY;
-        log.debug("defaulting currency to {}", currency);
+        log.info("defaulting currency to {}", currency);
       }
 
       itemId = getItemId(request.getGameRef());
@@ -710,6 +710,10 @@ public class RelaxGamingController {
     RequestContext ctx = RequestContext.instance()
                                        .withLanguage(language);
     if (isDemo) {
+      if (Strings.isNullOrEmpty(demoCurrency)) {
+        demoCurrency = DEFAULT_CURRENCY;
+        log.info("defaulting currency to {}", demoCurrency);
+      }
       log.info("launching in demo mode with currency {}", demoCurrency);
       ctx = ctx.withCurrency(demoCurrency);
     }
