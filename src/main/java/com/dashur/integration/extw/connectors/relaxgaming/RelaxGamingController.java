@@ -6,11 +6,14 @@ import com.dashur.integration.commons.exception.ValidationException;
 import com.dashur.integration.commons.exception.AuthException;
 import com.dashur.integration.commons.exception.EntityNotExistException;
 import com.dashur.integration.commons.utils.CommonUtils;
+import com.dashur.integration.commons.rest.CampaignClientService;
 import com.dashur.integration.commons.rest.model.TransactionRoundModel;
 import com.dashur.integration.commons.rest.model.TransactionFeedModel;
 import com.dashur.integration.commons.rest.model.CampaignCreateModel;
 import com.dashur.integration.commons.rest.model.CampaignModel;
 import com.dashur.integration.commons.rest.model.SimpleAccountModel;
+import com.dashur.integration.commons.rest.model.RestResponseWrapperModel;
+import com.dashur.integration.commons.rest.model.CampaignBetLevelModel;
 import com.dashur.integration.commons.domain.DomainService;
 import com.dashur.integration.commons.domain.CommonService;
 import com.dashur.integration.extw.Constant;
@@ -54,6 +57,7 @@ import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.Instant;
+import java.math.BigDecimal;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -69,6 +73,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.resteasy.spi.HttpRequest;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 @Slf4j
 @Path("/v1/extw/exp/relaxgaming")
@@ -91,6 +96,8 @@ public class RelaxGamingController {
   @Inject RgsService rgsService;
 
   @Context HttpRequest request;
+
+  @Inject @RestClient CampaignClientService campaignClientService;
 
   private RelaxGamingConfiguration relaxConfig;
 
@@ -405,11 +412,11 @@ public class RelaxGamingController {
       currency = request.getCurrency();
       if (Strings.isNullOrEmpty(currency)) {
         currency = DEFAULT_CURRENCY;
-        log.debug("defaulting currency to %s", currency);
+        log.debug("defaulting currency to {}", currency);
       }
 
       itemId = getItemId(request.getGameRef());
-      campaignExtRef = String.format("%s-%s", OPERATOR_CODE, UUID.randomUUID().toString());
+      campaignExtRef = String.format("%s-%s", OPERATOR_CODE, request.getTxId().toString()); // UUID.randomUUID().toString());
       if (log.isDebugEnabled()) {
         log.debug(
             "/v1/extw/exp/relaxgaming/freespins/add - [{}] [{}] [{}] [{}] [{}]",
@@ -436,6 +443,40 @@ public class RelaxGamingController {
       }
 
       if (Objects.isNull(campaign)) {
+
+        RestResponseWrapperModel<List<String>> currencyResp = campaignClientService.currency(
+          CommonUtils.authorizationBearer(ctx.getAccessToken()),
+          ctx.getTimezone(),
+          ctx.getCurrency(),
+          ctx.getUuid().toString(),
+          ctx.getLanguage(),
+          itemId);
+        if (!currencyResp.getData().contains(currency)) {
+          throw new ValidationException("game %s does not accept %s as campaign currency", itemId, currency);
+        }
+
+        RestResponseWrapperModel<CampaignBetLevelModel> betlevelResp = campaignClientService.betLevel(
+          CommonUtils.authorizationBearer(ctx.getAccessToken()),
+          ctx.getTimezone(),
+          ctx.getCurrency(),
+          ctx.getUuid().toString(),
+          ctx.getLanguage(),
+          itemId,
+          currency);
+
+        int level = 0;
+        for (BigDecimal amount : betlevelResp.getData().getLevels()) {
+          if (amount.multiply(BigDecimal.valueOf(100L)).longValue() == request.getFreespinValue()) {
+            break;
+          }
+          level++;
+        }
+        if (level >= betlevelResp.getData().getLevels().size()) {
+          throw new ValidationException("bet amount of %f is not a valid level: %s", 
+            (double)request.getFreespinValue()/100.0, 
+            betlevelResp.getData().getLevels().toString());
+        }
+
         Calendar now = Calendar.getInstance();
         now.add(Calendar.MINUTE, 1);
 
@@ -448,7 +489,7 @@ public class RelaxGamingController {
         create.setAccountId(setting.getCompanyId());
         create.setStatus(CampaignCreateModel.Status.ACTIVE);
         create.setType(CampaignCreateModel.Type.FREE_GAMES);
-        create.setBetLevel(Integer.valueOf(request.getFreespinValue().intValue()));
+        create.setBetLevel(level);
         create.setCurrency(currency);
         create.setStartTime(now.getTime());
 
@@ -479,7 +520,7 @@ public class RelaxGamingController {
 
       AddFreeRoundsResponse resp = new AddFreeRoundsResponse();
       resp.setTxId(request.getTxId());
-      resp.setFreespinsId(campaignExtRef);
+      resp.setFreespinsId(campaign.getExtRef());
 
       return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
     } catch (Exception e) {

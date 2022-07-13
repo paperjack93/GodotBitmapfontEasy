@@ -13,6 +13,29 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 @RegisterClientHeaders
 public interface CampaignClientService {
 
+  @GET
+  @Path("/v1/campaign/currency")
+  @Produces(MediaType.APPLICATION_JSON)
+  RestResponseWrapperModel<List<String>> currency(
+      @HeaderParam(Constant.REST_HEADER_AUTHORIZATION) String auth,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_TZ) String tz,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_CURRENCY) String currency,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_TX_ID) String txId,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_TX_LANG) String lang,
+      @QueryParam("game_id") Long gameId);
+
+  @GET
+  @Path("/v1/campaign/betlevel")
+  @Produces(MediaType.APPLICATION_JSON)
+  RestResponseWrapperModel<CampaignBetLevelModel> betLevel(
+      @HeaderParam(Constant.REST_HEADER_AUTHORIZATION) String auth,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_TZ) String tz,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_CURRENCY) String currency,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_TX_ID) String txId,
+      @HeaderParam(Constant.REST_HEADER_X_DAS_TX_LANG) String lang,
+      @QueryParam("game_id") Long gameId,
+      @QueryParam("currency") String campaignCurrency);
+
   @POST
   @Path("/v1/campaign")
   @Produces(MediaType.APPLICATION_JSON)
