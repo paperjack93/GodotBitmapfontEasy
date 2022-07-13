@@ -30,7 +30,7 @@ EXPIRES=$(date -u -Iseconds --date "today + 7 days")
 CRED='{ "partnerid": '$PARTNER_ID', "src": "partnerapi", "bouser": "" }'
 REQ='{ "credentials": '$CRED', "jurisdiction": "EU", "txid": '$TX_ID', "playerid": '$PLAYER_ID',  
 	"partnerid": '$PARTNER_ID', "gameref": "'$GAMEREF'", "amount": '$AMOUNT', 
-	"freespinsvalue": '$FREESPINS_VALUE', "expires": "'$EXPIRES'" }'
+	"freespinvalue": '$FREESPINS_VALUE', "expires": "'$EXPIRES'" }'
 
 echo $REQ
 

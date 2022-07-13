@@ -37,6 +37,7 @@ import com.dashur.integration.extw.rgs.RgsServiceProvider;
 import com.dashur.integration.extw.rgs.data.GameHash;
 import com.dashur.integration.extw.rgs.data.PlaycheckExtRequest;
 import com.dashur.integration.extw.rgs.data.PlaycheckExtResponse;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Date;
+import java.util.UUID;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
@@ -74,6 +76,7 @@ public class RelaxGamingController {
   static final String OPERATOR_CODE = Constant.OPERATOR_RELAXGAMING;
   static final String AUTHORIZATION = "Authorization";
   static final String ROUND_PREFIX = "1040-";
+  static final String DEFAULT_CURRENCY = "EUR";
 
   @Inject ExtwIntegConfiguration config;
 
@@ -389,6 +392,7 @@ public class RelaxGamingController {
     Long vendorId = 0L;
     String campaignExtRef = null;
     String partnerId = null;
+    String currency = null;
 
     try {
       if (!authenticate(auth, request.getCredentials().getPartnerId())) {
@@ -398,8 +402,23 @@ public class RelaxGamingController {
       RelaxGamingConfiguration.CompanySetting setting =
           getCompanySettings(partnerId, true);
 
+      currency = request.getCurrency();
+      if (Strings.isNullOrEmpty(currency)) {
+        currency = DEFAULT_CURRENCY;
+        log.debug("defaulting currency to %s", currency);
+      }
+
       itemId = getItemId(request.getGameRef());
-      campaignExtRef = String.format("%s-%s", OPERATOR_CODE, request.getPromoCode());
+      campaignExtRef = String.format("%s-%s", OPERATOR_CODE, UUID.randomUUID().toString());
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "/v1/extw/exp/relaxgaming/freespins/add - [{}] [{}] [{}] [{}] [{}]",
+            request.getCredentials().getPartnerId(),
+            request.getPlayerId(),
+            currency,
+            itemId,
+            campaignExtRef);
+      }          
 
       ctx =
           ctx.withAccessToken(
@@ -430,6 +449,7 @@ public class RelaxGamingController {
         create.setStatus(CampaignCreateModel.Status.ACTIVE);
         create.setType(CampaignCreateModel.Type.FREE_GAMES);
         create.setBetLevel(Integer.valueOf(request.getFreespinValue().intValue()));
+        create.setCurrency(currency);
         create.setStartTime(now.getTime());
 
         campaign = domainService.createCampaign(ctx, create);
@@ -458,7 +478,8 @@ public class RelaxGamingController {
           ctx, campaign.getId(), Lists.newArrayList(memberAccount.getId().toString()));
 
       AddFreeRoundsResponse resp = new AddFreeRoundsResponse();
-      resp.setFreespinsId(campaign.getId().toString());
+      resp.setTxId(request.getTxId());
+      resp.setFreespinsId(campaignExtRef);
 
       return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
     } catch (Exception e) {
