@@ -398,6 +398,7 @@ public class RelaxGamingController {
     Long itemId = 0L;
     Long vendorId = 0L;
     String campaignExtRef = null;
+    String campaignId = null;
     String partnerId = null;
     String currency = null;
 
@@ -405,6 +406,14 @@ public class RelaxGamingController {
       if (!authenticate(auth, request.getCredentials().getPartnerId())) {
         return Response.status(401).build();
       }
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "/v1/extw/exp/relaxgaming/freespins/add - [{}] [{}] [{}]",
+            request.getCredentials().getPartnerId(),
+            request.getGameRef(),
+            request.getPlayerId());
+      }
+
       partnerId = String.valueOf(request.getCredentials().getPartnerId());
       RelaxGamingConfiguration.CompanySetting setting =
           getCompanySettings(partnerId, true);
@@ -416,7 +425,8 @@ public class RelaxGamingController {
       }
 
       itemId = getItemId(request.getGameRef());
-      campaignExtRef = String.format("%s-%s", OPERATOR_CODE, request.getTxId().toString()); // UUID.randomUUID().toString());
+      campaignId = request.getTxId().toString(); // UUID.randomUUID().toString());
+      campaignExtRef = String.format("%s-%s", OPERATOR_CODE, campaignId);
       if (log.isDebugEnabled()) {
         log.debug(
             "/v1/extw/exp/relaxgaming/freespins/add - [{}] [{}] [{}] [{}] [{}]",
@@ -500,7 +510,9 @@ public class RelaxGamingController {
         throw new EntityNotExistException("Campaign not exist, despite created. Please check.");
       }
 
+      /*
       if (Objects.isNull(campaign.getVendorRef())) {
+        log.info("Campaign setup is not ready. Please try again later");
         AddFreeRoundsResponse resp = new AddFreeRoundsResponse();
         resp.setFreespinsId(campaign.getId().toString());
         return Response.serverError()
@@ -509,6 +521,7 @@ public class RelaxGamingController {
             .entity(resp)
             .build();
       }
+      */
 
       SimpleAccountModel memberAccount = domainService.getAccountByExtRef(ctx, request.getPlayerId().toString());
       if (Objects.isNull(memberAccount)) {
@@ -520,7 +533,7 @@ public class RelaxGamingController {
 
       AddFreeRoundsResponse resp = new AddFreeRoundsResponse();
       resp.setTxId(request.getTxId());
-      resp.setFreespinsId(campaign.getExtRef());
+      resp.setFreespinsId(campaignId);
 
       return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
     } catch (Exception e) {
@@ -545,6 +558,12 @@ public class RelaxGamingController {
     try {
       if (!authenticate(auth, request.getCredentials().getPartnerId())) {
         return Response.status(401).build();
+      }
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "/v1/extw/exp/relaxgaming/freespins/get - [{}] [{}]",
+            request.getCredentials().getPartnerId(),
+            request.getPlayerId());
       }
       partnerId = String.valueOf(request.getCredentials().getPartnerId());
       RelaxGamingConfiguration.CompanySetting setting =
@@ -613,6 +632,13 @@ public class RelaxGamingController {
       if (!authenticate(auth, request.getCredentials().getPartnerId())) {
         return Response.status(401).build();
       }
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "/v1/extw/exp/relaxgaming/freespins/cancel - [{}] [{}] [{}]",
+            request.getCredentials().getPartnerId(),
+            request.getFreespinsId(),
+            request.getPlayerId());
+      }      
       partnerId = String.valueOf(request.getCredentials().getPartnerId());
       RelaxGamingConfiguration.CompanySetting setting =
           getCompanySettings(partnerId, true);
@@ -650,7 +676,7 @@ public class RelaxGamingController {
 
       SimpleAccountModel memberAccount = domainService.getAccountByExtRef(ctx, request.getPlayerId().toString());
       if (Objects.isNull(memberAccount)) {
-        throw new EntityNotExistException("User with ext-ref [%s] is not exists", request.getPlayerId());
+        throw new EntityNotExistException("User with ext-ref [%s] does not exists", request.getPlayerId());
       }
 
       domainService.delCampaignMembers(
