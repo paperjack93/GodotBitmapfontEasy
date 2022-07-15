@@ -5,8 +5,10 @@ import com.dashur.integration.commons.exception.ApplicationException;
 import com.dashur.integration.commons.exception.ValidationException;
 import com.dashur.integration.commons.exception.AuthException;
 import com.dashur.integration.commons.exception.EntityNotExistException;
+import com.dashur.integration.commons.exception.*;
 import com.dashur.integration.commons.utils.CommonUtils;
 import com.dashur.integration.commons.rest.CampaignClientService;
+import com.dashur.integration.commons.rest.LauncherClientService;
 import com.dashur.integration.commons.rest.model.TransactionRoundModel;
 import com.dashur.integration.commons.rest.model.TransactionFeedModel;
 import com.dashur.integration.commons.rest.model.CampaignCreateModel;
@@ -14,6 +16,7 @@ import com.dashur.integration.commons.rest.model.CampaignModel;
 import com.dashur.integration.commons.rest.model.SimpleAccountModel;
 import com.dashur.integration.commons.rest.model.RestResponseWrapperModel;
 import com.dashur.integration.commons.rest.model.CampaignBetLevelModel;
+import com.dashur.integration.commons.rest.model.SimplifyLauncherItemModel;
 import com.dashur.integration.commons.domain.DomainService;
 import com.dashur.integration.commons.domain.CommonService;
 import com.dashur.integration.extw.Constant;
@@ -42,6 +45,7 @@ import com.dashur.integration.extw.rgs.data.PlaycheckExtRequest;
 import com.dashur.integration.extw.rgs.data.PlaycheckExtResponse;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
@@ -68,6 +72,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -98,6 +103,9 @@ public class RelaxGamingController {
   @Context HttpRequest request;
 
   @Inject @RestClient CampaignClientService campaignClientService;
+
+  @Inject @RestClient LauncherClientService launcherClientService;
+
 
   private RelaxGamingConfiguration relaxConfig;
 
@@ -157,13 +165,15 @@ public class RelaxGamingController {
       @QueryParam("moneymode") String mode,
       @QueryParam("currency") String demoCurrency,
       @QueryParam("clientid") String clientId,
-      @QueryParam("homeurl") @DefaultValue("") String lobbyUrl) {
+      @QueryParam("homeurl") @DefaultValue("") String lobbyUrl,
+      @QueryParam("rcenable") @DefaultValue("") String rcEnable,
+      @QueryParam("rciframeurl") @DefaultValue("") String rciFrameUrl) {
     try {
       String callerIp = CommonUtils.resolveIpAddress(this.request);
 
       if (log.isDebugEnabled()) {
         log.debug(
-            "/v1/extw/exp/relaxgaming/launch - [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}]",
+            "/v1/extw/exp/relaxgaming/launch - [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}] [{}]",
             gameId,
             token,
             language,
@@ -173,7 +183,9 @@ public class RelaxGamingController {
             demoCurrency,
             clientId,
             lobbyUrl,
-            callerIp);
+            callerIp,
+            rcEnable,
+            rciFrameUrl);
       }
 
       if (CommonUtils.isEmptyOrNull(clientId)) {
@@ -191,7 +203,9 @@ public class RelaxGamingController {
         demoCurrency,
         clientId, 
         lobbyUrl,
-        callerIp);
+        callerIp,
+        rcEnable,
+        rciFrameUrl);
     } catch (Exception e) {
       log.error("Unable to launch game [{}] - [{}]", gameId, partnerId, e);
       return Response.serverError()
@@ -716,6 +730,8 @@ public class RelaxGamingController {
    * @param clientId
    * @param lobbyUrl
    * @param callerIp
+   * @param rcEnable
+   * @param rciFrameUrl
    * @return
    */
   private Response getLauncherInternal(
@@ -728,7 +744,9 @@ public class RelaxGamingController {
       String demoCurrency,
       String clientId,
       String lobbyUrl,
-      String callerIp) {
+      String callerIp,
+      String rcEnable,
+      String rciFrameUrl) {
 
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
     if (!channel.equals(setting.getChannel())) {
@@ -750,7 +768,7 @@ public class RelaxGamingController {
     ctx.getMetaData().put("clientId", clientId);
     ctx.getMetaData().put("gameRef", getGameRef(gameId));
     log.debug("launcher request context: {}", ctx.getMetaData());
-
+/*
     String url =
         service.launchUrl(
             ctx,
@@ -765,6 +783,93 @@ public class RelaxGamingController {
             lobbyUrl,
             null,
             callerIp);
+*/
+
+    ctx =
+        ctx.withAccessToken(
+            commonService.companyAppAccessToken(
+                ctx, 
+                setting.getLauncherAppClientId(), 
+                setting.getLauncherAppClientCredential(), 
+                setting.getLauncherAppApiId(), 
+                setting.getLauncherAppApiCredential()));
+/*        
+    String url = domainService.extWalletLaunch(
+        ctx, 
+        token, 
+        setting.getLauncherItemApplicationId(), 
+        Long.parseLong(gameId), 
+        isDemo, 
+        lobbyUrl, 
+        null, 
+        callerIp);
+*/
+
+    String url;
+    RestResponseWrapperModel<String> result;
+    try {
+      SimplifyLauncherItemModel rq = new SimplifyLauncherItemModel();
+      rq.setToken(token);
+      rq.setAppId(setting.getLauncherItemApplicationId());
+      rq.setItemId(Long.parseLong(gameId));
+      rq.setDemo(isDemo);
+      rq.setExternal(Boolean.TRUE);
+
+      if (!CommonUtils.isEmptyOrNull(lobbyUrl) || 
+        !CommonUtils.isEmptyOrNull(rcEnable) ||
+        !CommonUtils.isEmptyOrNull(rciFrameUrl)) {
+        rq.setConfParams(Maps.newHashMap());
+      }
+
+      if (!CommonUtils.isEmptyOrNull(lobbyUrl)) {
+        rq.getConfParams().put("lobby_url", lobbyUrl);
+      }
+
+      if (!CommonUtils.isEmptyOrNull(rcEnable)) {
+        rq.getConfParams().put("rcenable", rcEnable);
+      }
+
+      if (!CommonUtils.isEmptyOrNull(rciFrameUrl)) {
+        rq.getConfParams().put("rciframeurl", rciFrameUrl);
+      }
+
+
+      if (!CommonUtils.isEmptyOrNull(ctx.getLanguage()) || !CommonUtils.isEmptyOrNull(callerIp)) {
+        rq.setCtx(Maps.newHashMap());
+      }
+
+      if (!CommonUtils.isEmptyOrNull(ctx.getLanguage())) {
+        rq.getCtx().put(com.dashur.integration.commons.Constant.LAUNCHER_META_DATA_KEY_LANG, ctx.getLanguage());
+      }
+
+      if (!CommonUtils.isEmptyOrNull(callerIp)) {
+        Map<String, Object> meta = Maps.newHashMap(ctx.getMetaData());
+        meta.put(com.dashur.integration.commons.Constant.LAUNCHER_META_DATA_KEY_GAME_ID, Long.parseLong(gameId));
+        meta.put(com.dashur.integration.commons.Constant.LAUNCHER_META_DATA_KEY_IP_ADDRESS, callerIp);
+        rq.getCtx().put(com.dashur.integration.commons.Constant.LAUNCHER_META_DATA_KEY_META_DATA, meta);
+      }
+
+      result =
+          launcherClientService.launch(
+              CommonUtils.authorizationBearer(ctx.getAccessToken()),
+              ctx.getTimezone(),
+              ctx.getCurrency(),
+              ctx.getUuid().toString(),
+              ctx.getLanguage(),
+              rq);
+    } catch (WebApplicationException e) {
+      throw com.dashur.integration.commons.domain.impl.DomainServiceImpl.Error(e);
+    }
+
+    if (result.hasError()) {
+      throw new ApplicationException(
+          200,
+          (Integer) result.getError().getOrDefault("code", 500),
+          "Unable to call remote services, un-classified error arises = [%s]",
+          result.getError().getOrDefault("message", "Error arises but unable to find details"));
+    }
+
+    url = result.getData();
 
     try {
       return Response.temporaryRedirect(new URI(url)).build();

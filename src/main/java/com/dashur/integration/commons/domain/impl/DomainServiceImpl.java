@@ -1299,4 +1299,8 @@ public class DomainServiceImpl implements DomainService {
       }
     }
   }
+  public static BaseException Error(WebApplicationException e) {
+    return error(e);
+  }
+
 }
