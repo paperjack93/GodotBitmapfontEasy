@@ -597,10 +597,10 @@ public class RelaxGamingController {
           FreeRound r = new FreeRound();
           r.setFreespinValue(m.getBetLevel().longValue());
           r.setExpires(toZonedDateTime(m.getEndTime()));
-          r.setPromoCode(m.getExtRef());
+          //r.setPromoCode(m.getExtRef());
           r.setGameRef(getGameRef(m.getGameId().toString()));
           r.setAmount(m.getNumOfGames());
-          r.setFreespinsId(m.getId().toString());
+          r.setFreespinsId(toFreespinsId(m.getExtRef()));
           r.setCreateTime(toZonedDateTime(m.getCreated()));
           r.setCurrency(m.getCurrency());
           freeRounds.add(r);
@@ -610,7 +610,7 @@ public class RelaxGamingController {
       return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
 
     } catch (Exception e) {
-      log.error("Unable to getFreespins [{}] - [{}  ] - [{}]", OPERATOR_CODE, partnerId, e);
+      log.error("Unable to getFreespins [{}] - [{}] - [{}]", OPERATOR_CODE, partnerId, e);
       return Response.ok()
           .type(MediaType.APPLICATION_JSON)
           .encoding("utf-8")
@@ -663,7 +663,7 @@ public class RelaxGamingController {
         throw new EntityNotExistException(
             "Campaign not exist, cannot cancel freespins. Please check.");
       }
-
+/*
       if (Objects.isNull(campaign.getVendorRef())) {
         CancelFreeRoundsResponse resp = new CancelFreeRoundsResponse();
         resp.setFreespinsId(campaign.getId().toString());
@@ -673,6 +673,7 @@ public class RelaxGamingController {
             .entity(resp)
             .build();
       }
+*/      
 
       SimpleAccountModel memberAccount = domainService.getAccountByExtRef(ctx, request.getPlayerId().toString());
       if (Objects.isNull(memberAccount)) {
@@ -683,7 +684,10 @@ public class RelaxGamingController {
           ctx, campaign.getId(), Lists.newArrayList(memberAccount.getId().toString()));
 
       CancelFreeRoundsResponse resp = new CancelFreeRoundsResponse();
-      resp.setFreespinsId(campaign.getId().toString());
+      String campaignId = toFreespinsId(campaign.getExtRef());
+      log.debug("cancel campaign [{}] with full id [{}]", 
+        campaignId, campaign.getExtRef());
+      resp.setFreespinsId(campaignId);
 
       return Response.ok().type(MediaType.APPLICATION_JSON).encoding("utf-8").entity(resp).build();
     } catch (Exception e) {
@@ -851,6 +855,21 @@ public class RelaxGamingController {
   private Date toDate(ZonedDateTime zonedDateTime) {
     return Date.from(zonedDateTime.toInstant());
   }
+
+  /**
+   * toFreespinsId
+   * 
+   * @param campaignId
+   * @return Date
+   */
+  private String toFreespinsId(String campaignId) {
+    String[] parts = campaignId.split("\\-");
+    if (parts.length < 2) {
+      return "";
+    }
+    return parts[1];
+  }
+
 
   /**
    * getGameRef
