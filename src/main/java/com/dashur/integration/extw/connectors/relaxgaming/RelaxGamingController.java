@@ -87,6 +87,7 @@ public class RelaxGamingController {
   static final String AUTHORIZATION = "Authorization";
   static final String ROUND_PREFIX = "1040-";
   static final String DEFAULT_CURRENCY = "EUR";
+  static final String CONF_PARAMS_PREFIX = "ely__";
 
   @Inject ExtwIntegConfiguration config;
 
@@ -139,6 +140,11 @@ public class RelaxGamingController {
    * @param plurl
    * @param rg_account_uri
    * @param accountlabel
+   * @param rcinterval
+   * @param rcelapsed
+   * @param rchistoryurl
+   * @param rcenable
+   * @param rciframeurl 
    * @param sessiontimer
    * @param sessionresult
    * @param sessiontimelimit
@@ -768,22 +774,6 @@ public class RelaxGamingController {
     ctx.getMetaData().put("clientId", clientId);
     ctx.getMetaData().put("gameRef", getGameRef(gameId));
     log.debug("launcher request context: {}", ctx.getMetaData());
-/*
-    String url =
-        service.launchUrl(
-            ctx,
-            setting.getLauncherAppClientId(),
-            setting.getLauncherAppClientCredential(),
-            setting.getLauncherAppApiId(),
-            setting.getLauncherAppApiCredential(),
-            setting.getLauncherItemApplicationId(),
-            Long.parseLong(gameId),
-            isDemo,
-            token,
-            lobbyUrl,
-            null,
-            callerIp);
-*/
 
     ctx =
         ctx.withAccessToken(
@@ -793,17 +783,6 @@ public class RelaxGamingController {
                 setting.getLauncherAppClientCredential(), 
                 setting.getLauncherAppApiId(), 
                 setting.getLauncherAppApiCredential()));
-/*        
-    String url = domainService.extWalletLaunch(
-        ctx, 
-        token, 
-        setting.getLauncherItemApplicationId(), 
-        Long.parseLong(gameId), 
-        isDemo, 
-        lobbyUrl, 
-        null, 
-        callerIp);
-*/
 
     String url;
     RestResponseWrapperModel<String> result;
@@ -826,13 +805,12 @@ public class RelaxGamingController {
       }
 
       if (!CommonUtils.isEmptyOrNull(rcEnable)) {
-        rq.getConfParams().put("rcenable", rcEnable);
+        rq.getConfParams().put(CONF_PARAMS_PREFIX + "rcenable", rcEnable);
       }
 
       if (!CommonUtils.isEmptyOrNull(rciFrameUrl)) {
-        rq.getConfParams().put("rciframeurl", rciFrameUrl);
+        rq.getConfParams().put(CONF_PARAMS_PREFIX + "rciframeurl", rciFrameUrl);
       }
-
 
       if (!CommonUtils.isEmptyOrNull(ctx.getLanguage()) || !CommonUtils.isEmptyOrNull(callerIp)) {
         rq.setCtx(Maps.newHashMap());

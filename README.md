@@ -9,6 +9,33 @@ is sourced from /charts/extw-integ/ (TODO: support one configuration per environ
 
 The /etc folder is unused and only temporary for legacy reference.
 
+# project structure
+
+## File structure
+`src/main/docker`
+Docker files for different compile settings. Dockerfile.jvm is currently in use.
+
+`src/main/java/com/dashur/integration/commons`
+The Dashur API implementation 
+
+`src/main/java/com/dashur/integration/extw/connectors`
+The operator specific integration code 
+
+## operator connector
+A connector has four major component classes
+
+The endpoints implemented by the operator `*clientService.java`
+Configuration `*Configuration.java`
+Dashur required endpoints `*ConnectorServiceImpl.java`
+Operator required endpoints `*Controller.java`
+
+The classes that define the communication data can be found in the operator `data` folder.
+
+# Redis server and Pro Redisson
+
+A local redis server for caching tokens must be set up and configured in application.properties. The client implementation
+in extw-integ uses Pro Redisson and requires a license.
+
 # code-with-quarkus Project
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
