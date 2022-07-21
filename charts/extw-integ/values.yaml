@@ -37,7 +37,7 @@ service:
   port: 8080
 
 ingress:
-  enabled: false
+  enabled: true
   annotations:
     nginx.ingress.kubernetes.io/http2-push-preload: "true"
     field.cattle.io/ingressState: "{}"
@@ -51,7 +51,7 @@ ingress:
   hosts:
     - host: dev.elysiumstudios.se
       paths:
-        - path: /v1
+        - path: /v1/extw/exp/relaxgaming/launch
           pathType: Prefix
   tls: []
 
