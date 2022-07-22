@@ -11,6 +11,10 @@ image:
 imagePullSecrets:
   - name: harborcred
 
+# specify the application properties config file to use
+# from /charts/extw-integ/
+configFile: application.properties
+
 nameOverride: ""
 fullnameOverride: ""
 
