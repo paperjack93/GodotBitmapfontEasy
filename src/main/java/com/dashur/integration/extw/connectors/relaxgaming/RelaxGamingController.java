@@ -804,6 +804,10 @@ public class RelaxGamingController {
         rq.getConfParams().put("lobby_url", lobbyUrl);
       }
 
+      if (!CommonUtils.isEmptyOrNull(demoCurrency)) {
+        rq.getConfParams().put(CONF_PARAMS_PREFIX + "currency", demoCurrency);
+      }
+
       if (!CommonUtils.isEmptyOrNull(rcEnable)) {
         rq.getConfParams().put(CONF_PARAMS_PREFIX + "rcenable", rcEnable);
       }
