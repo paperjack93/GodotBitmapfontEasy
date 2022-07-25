@@ -173,7 +173,11 @@ public class RelaxGamingController {
       @QueryParam("clientid") String clientId,
       @QueryParam("homeurl") @DefaultValue("") String lobbyUrl,
       @QueryParam("rcenable") @DefaultValue("") String rcEnable,
-      @QueryParam("rciframeurl") @DefaultValue("") String rciFrameUrl) {
+      @QueryParam("rciframeurl") @DefaultValue("") String rciFrameUrl,
+      @QueryParam("rcinterval") @DefaultValue("") String rcInterval,
+      @QueryParam("rcelapsed") @DefaultValue("") String rcElapsed,
+      @QueryParam("rchistoryurl") @DefaultValue("") String rcHistoryUrl
+      ) {
     try {
       String callerIp = CommonUtils.resolveIpAddress(this.request);
 
@@ -211,7 +215,10 @@ public class RelaxGamingController {
         lobbyUrl,
         callerIp,
         rcEnable,
-        rciFrameUrl);
+        rciFrameUrl,
+        rcInterval,
+        rcElapsed,
+        rcHistoryUrl);
     } catch (Exception e) {
       log.error("Unable to launch game [{}] - [{}]", gameId, partnerId, e);
       return Response.serverError()
@@ -752,7 +759,11 @@ public class RelaxGamingController {
       String lobbyUrl,
       String callerIp,
       String rcEnable,
-      String rciFrameUrl) {
+      String rciFrameUrl,
+      String rcInterval,
+      String rcElapsed,
+      String rcHistoryUrl
+      ) {
 
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
     if (!channel.equals(setting.getChannel())) {
@@ -794,26 +805,38 @@ public class RelaxGamingController {
       rq.setDemo(isDemo);
       rq.setExternal(Boolean.TRUE);
 
-      if (!CommonUtils.isEmptyOrNull(lobbyUrl) || 
-        !CommonUtils.isEmptyOrNull(rcEnable) ||
-        !CommonUtils.isEmptyOrNull(rciFrameUrl)) {
-        rq.setConfParams(Maps.newHashMap());
-      }
+      Map<String, Object> confParams = Maps.newHashMap();
 
       if (!CommonUtils.isEmptyOrNull(lobbyUrl)) {
-        rq.getConfParams().put("lobby_url", lobbyUrl);
+        confParams.put("lobby_url", lobbyUrl);
       }
 
       if (!CommonUtils.isEmptyOrNull(demoCurrency)) {
-        rq.getConfParams().put(CONF_PARAMS_PREFIX + "currency", demoCurrency);
+        confParams.put(CONF_PARAMS_PREFIX + "currency", demoCurrency);
       }
 
       if (!CommonUtils.isEmptyOrNull(rcEnable)) {
-        rq.getConfParams().put(CONF_PARAMS_PREFIX + "rcenable", rcEnable);
+        confParams.put(CONF_PARAMS_PREFIX + "rcenable", rcEnable);
       }
 
       if (!CommonUtils.isEmptyOrNull(rciFrameUrl)) {
-        rq.getConfParams().put(CONF_PARAMS_PREFIX + "rciframeurl", rciFrameUrl);
+        confParams.put(CONF_PARAMS_PREFIX + "rciframeurl", rciFrameUrl);
+      }
+
+      if (!CommonUtils.isEmptyOrNull(rcInterval)) {
+        confParams.put(CONF_PARAMS_PREFIX + "rcinterval", rcInterval);
+      }
+
+      if (!CommonUtils.isEmptyOrNull(rcElapsed)) {
+        confParams.put(CONF_PARAMS_PREFIX + "rcelapsed", rcElapsed);
+      }
+
+      if (!CommonUtils.isEmptyOrNull("rcHistoryUrl")) {
+        confParams.put(CONF_PARAMS_PREFIX + "rcHistoryUrl", rcHistoryUrl);
+      }
+
+      if (!confParams.isEmpty()) {
+        rq.setConfParams(confParams);
       }
 
       if (!CommonUtils.isEmptyOrNull(ctx.getLanguage()) || !CommonUtils.isEmptyOrNull(callerIp)) {
