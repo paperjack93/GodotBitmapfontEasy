@@ -55,7 +55,7 @@ ingress:
   hosts:
     - host: dev.elysiumstudios.se
       paths:
-        - path: /v1/extw/exp/relaxgaming/launch
+        - path: /v1/extw/exp/relaxgaming/
           pathType: Prefix
   tls: []
 
