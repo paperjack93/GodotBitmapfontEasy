@@ -767,7 +767,9 @@ public class RelaxGamingController {
 
     RelaxGamingConfiguration.CompanySetting setting = getCompanySettings(partnerId, false);
     if (!channel.equals(setting.getChannel())) {
-      throw new ValidationException("channel [%s] is invalid for partnerId [%s]", channel, partnerId);
+      // throw new ValidationException("channel [%s] is invalid for partnerId [%s]", channel, partnerId);
+      log.warn("channel {} is not equal to configured channel {} for partnerId {}", 
+        channel, setting.getChannel(), partnerId)
     }
 
     Boolean isDemo = mode.equals("fun");
@@ -831,7 +833,7 @@ public class RelaxGamingController {
         confParams.put(CONF_PARAMS_PREFIX + "rcelapsed", rcElapsed);
       }
 
-      if (!CommonUtils.isEmptyOrNull("rcHistoryUrl")) {
+      if (!CommonUtils.isEmptyOrNull(rcHistoryUrl)) {
         confParams.put(CONF_PARAMS_PREFIX + "rcHistoryUrl", rcHistoryUrl);
       }
 

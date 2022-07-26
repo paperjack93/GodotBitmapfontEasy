@@ -367,7 +367,7 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
             operatorRes.getCurrency(),
             CommonUtils.fromCents(operatorRes.getBalance().longValue())));
         if (CommonUtils.isEmptyOrNull(operatorRes.getUserName())) {
-          response.setUsername("ref-" + operatorRes.getCustomerId());
+          response.setUsername("ref-" + operatorRes.getPlayerId()); // operatorRes.getCustomerId());
         } else {
           response.setUsername(operatorRes.getUserName());
         }
