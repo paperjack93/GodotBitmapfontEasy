@@ -769,7 +769,7 @@ public class RelaxGamingController {
     if (!channel.equals(setting.getChannel())) {
       // throw new ValidationException("channel [%s] is invalid for partnerId [%s]", channel, partnerId);
       log.warn("channel {} is not equal to configured channel {} for partnerId {}", 
-        channel, setting.getChannel(), partnerId)
+        channel, setting.getChannel(), partnerId);
     }
 
     Boolean isDemo = mode.equals("fun");
