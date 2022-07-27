@@ -5,9 +5,18 @@ A service for the external wallet API and operator required endpoints.
 # configuration
 
 When running a local instance the application.properies configuration is read from the src/main/resources/ folder. The deployed configuration
-is sourced from /charts/extw-integ/ (TODO: support one configuration per environment) and copied to the Docker image /deployments/config folder.
+is sourced from /charts/extw-integ/ and copied to the Docker image /deployments/config folder.
 
 The /etc folder is unused and only temporary for legacy reference.
+
+## application.properties
+
+In addition to the per component/class settings, each operator has a configuration section that specifies on or more integration companies
+registred by Dashur. For example, the Relax integration has the company 366276199 and it is attached to the operator supplied partner id 10.
+`extw.operator.relaxgaming.operator-id-mapping.ext-10=366276199`
+`extw.operator.relaxgaming.co.366276199.partner-id=10`
+
+some settings that specify authorization can be set from github secrets.
 
 # project structure
 
