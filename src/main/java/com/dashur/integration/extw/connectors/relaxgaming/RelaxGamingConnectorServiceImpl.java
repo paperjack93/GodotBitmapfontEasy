@@ -149,7 +149,7 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
 
   public TransactionResponse transaction(javax.ws.rs.core.Response res) {
     if (Utils.isSuccess(res.getStatus())){
-      return (TransactionResponse) res.getEntity();
+      return res.readEntity(TransactionResponse.class);
     }
     throw Utils.toException(res.getStatus());
   }
