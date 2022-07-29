@@ -112,15 +112,15 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
 
       if (DasTransactionCategory.WAGER == request.getCategory()) {        
         WithdrawRequest operatorReq = (WithdrawRequest) Utils.map(request, setting);
-        TransactionResponse operatorRes = clientService.withdraw(auth, partnerId, operatorReq);
+        TransactionResponse operatorRes = transaction(clientService.withdraw(auth, partnerId, operatorReq));
         return (DasTransactionResponse) Utils.map(request, operatorRes);
       } else if (DasTransactionCategory.PAYOUT == request.getCategory()) {
         DepositRequest operatorReq = (DepositRequest) Utils.map(request, setting);
-        TransactionResponse operatorRes = clientService.deposit(auth, partnerId, operatorReq);
+        TransactionResponse operatorRes = transaction(clientService.deposit(auth, partnerId, operatorReq));
         return (DasTransactionResponse) Utils.map(request, operatorRes);
       } else if (DasTransactionCategory.REFUND == request.getCategory()) {
         RollbackRequest operatorReq = (RollbackRequest) Utils.map(request, setting);
-        TransactionResponse operatorRes = clientService.rollback(auth, partnerId, operatorReq);
+        TransactionResponse operatorRes = transaction(clientService.rollback(auth, partnerId, operatorReq));
         return (DasTransactionResponse) Utils.map(request, operatorRes);
       }
     } catch (WebApplicationException e) {
@@ -140,11 +140,18 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
       Integer partnerId = setting.getPartnerId();
       RelaxGamingClientService clientService = clientService(companyId);
       DepositRequest operatorReq = (DepositRequest) Utils.map(request, setting);
-      TransactionResponse operatorRes = clientService.deposit(auth, partnerId, operatorReq);
+      TransactionResponse operatorRes = transaction(clientService.deposit(auth, partnerId, operatorReq));
       return (DasEndRoundResponse) Utils.map(request, operatorRes);
     } catch (WebApplicationException e) {
       throw Utils.toException(e);
     }
+  }
+
+  public TransactionResponse transaction(javax.ws.rs.core.Response res) {
+    if (Utils.isSuccess(res.getStatus())){
+      return (TransactionResponse) res.getEntity();
+    }
+    throw Utils.toException(res.getStatus());
   }
 
   @Override
@@ -483,6 +490,31 @@ public class RelaxGamingConnectorServiceImpl implements ConnectorService {
       return new ApplicationException(
           "Connector response [%s] - [%s] - events [%s]", 
             errorRes.getCode(), errorRes.getMessage(), errorRes.getEvents());
+    }
+
+    /**
+     * successful http status code
+     */
+    static boolean isSuccess(int status) {
+      return status >= 200 && status <= 299;
+    } 
+
+    /**
+     * Map operator http status code to Dashur exception object
+     */
+    static BaseException toException(int status) {
+      if (status < 500) { // 4xx, faulty request, shall not retry or rollback 
+        return new ApplicationException(toMessage(status));
+      }
+      // 5xx, unknown error, retry or rollback
+      return new PaymentException(toMessage(status));
+    }
+
+    /**
+     * status code to message
+     */
+    static String toMessage(int status) {
+      return String.format("ClientService http status code [%d]", status);
     }
 
     /**

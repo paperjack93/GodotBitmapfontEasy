@@ -36,7 +36,7 @@ public interface RelaxGamingClientService {
   @Path("/{partnerid}/withdraw")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  TransactionResponse withdraw(
+  javax.ws.rs.core.Response withdraw(
     @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId, 
     final WithdrawRequest request);
 
@@ -44,7 +44,7 @@ public interface RelaxGamingClientService {
   @Path("/{partnerid}/deposit")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  TransactionResponse deposit(
+  javax.ws.rs.core.Response deposit(
     @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId, 
     final DepositRequest request);
 
@@ -52,7 +52,7 @@ public interface RelaxGamingClientService {
   @Path("/{partnerid}/rollback")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  TransactionResponse rollback(
+  javax.ws.rs.core.Response rollback(
     @HeaderParam(AUTHORIZATION) String auth, @PathParam(PARTNERID) Integer partnerId, 
     final RollbackRequest request);
 
